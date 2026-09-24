@@ -1,0 +1,32 @@
+{
+    "nodes": [
+        {
+            "id": "group_REPORT",
+            "x": -50,
+            "y": -100,
+            "width": 3000,
+            "height": 1360,
+            "type": "group",
+            "label": "Reporting"
+        },
+        {
+            "id": "node_REPORT_1",
+            "type": "file",
+            "file": "nodes/REPORT.1 Markdown Report Generation.md",
+            "x": 300,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_REPORT_2",
+            "type": "file",
+            "file": "nodes/REPORT.2 JSON Report Generation.md",
+            "x": 1200,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        }
+    ],
+    "edges": []
+}

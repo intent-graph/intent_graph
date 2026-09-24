@@ -1,0 +1,116 @@
+{
+    "nodes": [
+        {
+            "id": "group_ROOT",
+            "x": -50,
+            "y": -100,
+            "width": 3000,
+            "height": 2220,
+            "type": "group",
+            "label": "SQL Function Sync Validator"
+        },
+        {
+            "id": "node_DISCOVER",
+            "type": "file",
+            "file": "nodes/DISCOVER Discovery.md",
+            "x": 300,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_PARSE",
+            "type": "file",
+            "file": "nodes/PARSE Parsing.md",
+            "x": 1200,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_VALIDATE",
+            "type": "file",
+            "file": "nodes/VALIDATE Validation.md",
+            "x": 2100,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_REPORT",
+            "type": "file",
+            "file": "nodes/REPORT Reporting.md",
+            "x": 300,
+            "y": 1160,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_ORCHESTRATE",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE Orchestration.md",
+            "x": 1200,
+            "y": 1160,
+            "width": 600,
+            "height": 560
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge_DISCOVER_VALIDATE",
+            "fromNode": "node_DISCOVER",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE",
+            "toSide": "left",
+            "label": "Discovery provides FunctionRecord dict (schema.name -> generated/source parsed data) consumed by Validation for comparison."
+        },
+        {
+            "id": "edge_DISCOVER_REPORT",
+            "fromNode": "node_DISCOVER",
+            "fromSide": "right",
+            "toNode": "node_REPORT",
+            "toSide": "left",
+            "label": "Discovery provides FunctionRecord dict to Reporter for source location paths and context in report tables."
+        },
+        {
+            "id": "edge_PARSE_DISCOVER",
+            "fromNode": "node_PARSE",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER",
+            "toSide": "left",
+            "label": "Discovery depends on the Parser to extract signatures and bodies from .sql files during both generated cache scanning and source directory scanning."
+        },
+        {
+            "id": "edge_VALIDATE_REPORT",
+            "fromNode": "node_VALIDATE",
+            "fromSide": "right",
+            "toNode": "node_REPORT",
+            "toSide": "left",
+            "label": "Validation produces ValidationReport (list of ValidationResult with severity, issues, details) consumed by Reporter to generate output files."
+        },
+        {
+            "id": "edge_ORCHESTRATE_DISCOVER",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER",
+            "toSide": "left",
+            "label": "Orchestrator calls FunctionDiscovery.discover_all() to start the pipeline."
+        },
+        {
+            "id": "edge_ORCHESTRATE_VALIDATE",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE",
+            "toSide": "left",
+            "label": "Orchestrator iterates through discovered functions and calls FunctionValidator.validate_function() for each."
+        },
+        {
+            "id": "edge_ORCHESTRATE_REPORT",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "right",
+            "toNode": "node_REPORT",
+            "toSide": "left",
+            "label": "Orchestrator calls ReportGenerator.generate_all() with results and functions."
+        }
+    ]
+}

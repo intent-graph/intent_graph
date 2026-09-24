@@ -1,0 +1,507 @@
+{
+    "nodes": [
+        {
+            "id": "node_ROOT",
+            "type": "file",
+            "file": "nodes/ROOT SQL Function Sync Validator.md",
+            "x": 4820,
+            "y": 0,
+            "width": 560,
+            "height": 650
+        },
+        {
+            "id": "node_DISCOVER",
+            "type": "file",
+            "file": "nodes/DISCOVER Discovery.md",
+            "x": 660,
+            "y": 800,
+            "width": 560,
+            "height": 650,
+            "color": "1"
+        },
+        {
+            "id": "node_PARSE",
+            "type": "file",
+            "file": "nodes/PARSE Parsing.md",
+            "x": 2740,
+            "y": 800,
+            "width": 560,
+            "height": 650,
+            "color": "2"
+        },
+        {
+            "id": "node_VALIDATE",
+            "type": "file",
+            "file": "nodes/VALIDATE Validation.md",
+            "x": 5150,
+            "y": 800,
+            "width": 560,
+            "height": 650,
+            "color": "3"
+        },
+        {
+            "id": "node_REPORT",
+            "type": "file",
+            "file": "nodes/REPORT Reporting.md",
+            "x": 7230,
+            "y": 800,
+            "width": 560,
+            "height": 650,
+            "color": "4"
+        },
+        {
+            "id": "node_ORCHESTRATE",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE Orchestration.md",
+            "x": 8980,
+            "y": 800,
+            "width": 560,
+            "height": 650,
+            "color": "5"
+        },
+        {
+            "id": "node_DISCOVER_1",
+            "type": "file",
+            "file": "nodes/DISCOVER.1 Generated Cache Scanning.md",
+            "x": 0,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "1"
+        },
+        {
+            "id": "node_DISCOVER_2",
+            "type": "file",
+            "file": "nodes/DISCOVER.2 Source Directory Scanning.md",
+            "x": 660,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "1"
+        },
+        {
+            "id": "node_DISCOVER_3",
+            "type": "file",
+            "file": "nodes/DISCOVER.3 Fallback Grep Search.md",
+            "x": 1320,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "1"
+        },
+        {
+            "id": "node_PARSE_1",
+            "type": "file",
+            "file": "nodes/PARSE.1 Signature Extraction.md",
+            "x": 2080,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "2"
+        },
+        {
+            "id": "node_PARSE_2",
+            "type": "file",
+            "file": "nodes/PARSE.2 Body Extraction.md",
+            "x": 2740,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "2"
+        },
+        {
+            "id": "node_PARSE_3",
+            "type": "file",
+            "file": "nodes/PARSE.3 Type Normalization.md",
+            "x": 3400,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "2"
+        },
+        {
+            "id": "node_VALIDATE_1",
+            "type": "file",
+            "file": "nodes/VALIDATE.1 Existence Checking.md",
+            "x": 4160,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "3"
+        },
+        {
+            "id": "node_VALIDATE_2",
+            "type": "file",
+            "file": "nodes/VALIDATE.2 Signature Comparison.md",
+            "x": 4820,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "3"
+        },
+        {
+            "id": "node_VALIDATE_3",
+            "type": "file",
+            "file": "nodes/VALIDATE.3 Body Comparison.md",
+            "x": 5480,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "3"
+        },
+        {
+            "id": "node_VALIDATE_4",
+            "type": "file",
+            "file": "nodes/VALIDATE.4 Severity Classification.md",
+            "x": 6140,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "3"
+        },
+        {
+            "id": "node_REPORT_1",
+            "type": "file",
+            "file": "nodes/REPORT.1 Markdown Report Generation.md",
+            "x": 6900,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "4"
+        },
+        {
+            "id": "node_REPORT_2",
+            "type": "file",
+            "file": "nodes/REPORT.2 JSON Report Generation.md",
+            "x": 7560,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "4"
+        },
+        {
+            "id": "node_ORCHESTRATE_1",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE.1 CLI Argument Parsing.md",
+            "x": 8320,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "5"
+        },
+        {
+            "id": "node_ORCHESTRATE_2",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE.2 Pipeline Execution.md",
+            "x": 8980,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "5"
+        },
+        {
+            "id": "node_ORCHESTRATE_3",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE.3 Summary and Exit Code.md",
+            "x": 9640,
+            "y": 1600,
+            "width": 560,
+            "height": 650,
+            "color": "5"
+        }
+    ],
+    "edges": [
+        {
+            "id": "arc_edge_ROOT_DISCOVER",
+            "fromNode": "node_ROOT",
+            "fromSide": "bottom",
+            "toNode": "node_DISCOVER",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_ROOT_PARSE",
+            "fromNode": "node_ROOT",
+            "fromSide": "bottom",
+            "toNode": "node_PARSE",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_ROOT_VALIDATE",
+            "fromNode": "node_ROOT",
+            "fromSide": "bottom",
+            "toNode": "node_VALIDATE",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_ROOT_REPORT",
+            "fromNode": "node_ROOT",
+            "fromSide": "bottom",
+            "toNode": "node_REPORT",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_ROOT_ORCHESTRATE",
+            "fromNode": "node_ROOT",
+            "fromSide": "bottom",
+            "toNode": "node_ORCHESTRATE",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_DISCOVER_DISCOVER_1",
+            "fromNode": "node_DISCOVER",
+            "fromSide": "bottom",
+            "toNode": "node_DISCOVER_1",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_DISCOVER_DISCOVER_2",
+            "fromNode": "node_DISCOVER",
+            "fromSide": "bottom",
+            "toNode": "node_DISCOVER_2",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_DISCOVER_DISCOVER_3",
+            "fromNode": "node_DISCOVER",
+            "fromSide": "bottom",
+            "toNode": "node_DISCOVER_3",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_PARSE_PARSE_1",
+            "fromNode": "node_PARSE",
+            "fromSide": "bottom",
+            "toNode": "node_PARSE_1",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_PARSE_PARSE_2",
+            "fromNode": "node_PARSE",
+            "fromSide": "bottom",
+            "toNode": "node_PARSE_2",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_PARSE_PARSE_3",
+            "fromNode": "node_PARSE",
+            "fromSide": "bottom",
+            "toNode": "node_PARSE_3",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_VALIDATE_VALIDATE_1",
+            "fromNode": "node_VALIDATE",
+            "fromSide": "bottom",
+            "toNode": "node_VALIDATE_1",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_VALIDATE_VALIDATE_2",
+            "fromNode": "node_VALIDATE",
+            "fromSide": "bottom",
+            "toNode": "node_VALIDATE_2",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_VALIDATE_VALIDATE_3",
+            "fromNode": "node_VALIDATE",
+            "fromSide": "bottom",
+            "toNode": "node_VALIDATE_3",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_VALIDATE_VALIDATE_4",
+            "fromNode": "node_VALIDATE",
+            "fromSide": "bottom",
+            "toNode": "node_VALIDATE_4",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_REPORT_REPORT_1",
+            "fromNode": "node_REPORT",
+            "fromSide": "bottom",
+            "toNode": "node_REPORT_1",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_REPORT_REPORT_2",
+            "fromNode": "node_REPORT",
+            "fromSide": "bottom",
+            "toNode": "node_REPORT_2",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_ORCHESTRATE_ORCHESTRATE_1",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "bottom",
+            "toNode": "node_ORCHESTRATE_1",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_ORCHESTRATE_ORCHESTRATE_2",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "bottom",
+            "toNode": "node_ORCHESTRATE_2",
+            "toSide": "top"
+        },
+        {
+            "id": "arc_edge_ORCHESTRATE_ORCHESTRATE_3",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "bottom",
+            "toNode": "node_ORCHESTRATE_3",
+            "toSide": "top"
+        },
+        {
+            "id": "ilink_edge_DISCOVER_VALIDATE",
+            "fromNode": "node_DISCOVER",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE",
+            "toSide": "left",
+            "label": "Discovery provides FunctionRecord dict (schema.name -> generated/source parsed data) consumed by Validation for comparison."
+        },
+        {
+            "id": "ilink_edge_DISCOVER_REPORT",
+            "fromNode": "node_DISCOVER",
+            "fromSide": "right",
+            "toNode": "node_REPORT",
+            "toSide": "left",
+            "label": "Discovery provides FunctionRecord dict to Reporter for source location paths and context in report tables."
+        },
+        {
+            "id": "ilink_edge_PARSE_DISCOVER",
+            "fromNode": "node_PARSE",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER",
+            "toSide": "left",
+            "label": "Discovery depends on the Parser to extract signatures and bodies from .sql files during both generated cache scanning and source directory scanning."
+        },
+        {
+            "id": "ilink_edge_VALIDATE_REPORT",
+            "fromNode": "node_VALIDATE",
+            "fromSide": "right",
+            "toNode": "node_REPORT",
+            "toSide": "left",
+            "label": "Validation produces ValidationReport (list of ValidationResult with severity, issues, details) consumed by Reporter to generate output files."
+        },
+        {
+            "id": "ilink_edge_ORCHESTRATE_DISCOVER",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER",
+            "toSide": "left",
+            "label": "Orchestrator calls FunctionDiscovery.discover_all() to start the pipeline."
+        },
+        {
+            "id": "ilink_edge_ORCHESTRATE_VALIDATE",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE",
+            "toSide": "left",
+            "label": "Orchestrator iterates through discovered functions and calls FunctionValidator.validate_function() for each."
+        },
+        {
+            "id": "ilink_edge_ORCHESTRATE_REPORT",
+            "fromNode": "node_ORCHESTRATE",
+            "fromSide": "right",
+            "toNode": "node_REPORT",
+            "toSide": "left",
+            "label": "Orchestrator calls ReportGenerator.generate_all() with results and functions."
+        },
+        {
+            "id": "ilink_edge_PARSE_1_DISCOVER_1",
+            "fromNode": "node_PARSE_1",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER_1",
+            "toSide": "left",
+            "label": "Generated cache scanning uses signature extraction to create ParsedFunction objects."
+        },
+        {
+            "id": "ilink_edge_PARSE_1_DISCOVER_2",
+            "fromNode": "node_PARSE_1",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER_2",
+            "toSide": "left",
+            "label": "Source scanning uses signature extraction to identify functions in multi-statement files."
+        },
+        {
+            "id": "ilink_edge_PARSE_2_DISCOVER_1",
+            "fromNode": "node_PARSE_2",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER_1",
+            "toSide": "left",
+            "label": "Generated cache scanning uses body extraction for each function."
+        },
+        {
+            "id": "ilink_edge_PARSE_2_DISCOVER_2",
+            "fromNode": "node_PARSE_2",
+            "fromSide": "right",
+            "toNode": "node_DISCOVER_2",
+            "toSide": "left",
+            "label": "Source scanning uses body extraction for each parsed function."
+        },
+        {
+            "id": "ilink_edge_PARSE_3_PARSE_1",
+            "fromNode": "node_PARSE_3",
+            "fromSide": "right",
+            "toNode": "node_PARSE_1",
+            "toSide": "left",
+            "label": "Type normalization is called during signature extraction to normalize parameter and return types."
+        },
+        {
+            "id": "ilink_edge_PARSE_3_VALIDATE_2",
+            "fromNode": "node_PARSE_3",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_2",
+            "toSide": "left",
+            "label": "Type normalization enables signature comparison by resolving aliases."
+        },
+        {
+            "id": "ilink_edge_PARSE_3_VALIDATE_3",
+            "fromNode": "node_PARSE_3",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_3",
+            "toSide": "left",
+            "label": "Type normalization is used during body comparison for consistent type names."
+        },
+        {
+            "id": "ilink_edge_VALIDATE_1_VALIDATE_4",
+            "fromNode": "node_VALIDATE_1",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_4",
+            "toSide": "left",
+            "label": "Existence check results (missing source = CRITICAL, missing DB = WARNING) determine initial severity classification."
+        },
+        {
+            "id": "ilink_edge_VALIDATE_2_VALIDATE_4",
+            "fromNode": "node_VALIDATE_2",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_4",
+            "toSide": "left",
+            "label": "Signature mismatch results (language difference = CRITICAL) feed severity assignment."
+        },
+        {
+            "id": "ilink_edge_VALIDATE_3_VALIDATE_4",
+            "fromNode": "node_VALIDATE_3",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_4",
+            "toSide": "left",
+            "label": "Body mismatch results (any difference = WARNING with similarity score) feed severity assignment."
+        },
+        {
+            "id": "ilink_edge_VALIDATE_4_REPORT_1",
+            "fromNode": "node_VALIDATE_4",
+            "fromSide": "right",
+            "toNode": "node_REPORT_1",
+            "toSide": "left",
+            "label": "Severity-classified results drive the grouping and ordering of the markdown report."
+        },
+        {
+            "id": "ilink_edge_VALIDATE_4_REPORT_2",
+            "fromNode": "node_VALIDATE_4",
+            "fromSide": "right",
+            "toNode": "node_REPORT_2",
+            "toSide": "left",
+            "label": "Severity-classified results are serialized into the JSON data structure."
+        }
+    ]
+}

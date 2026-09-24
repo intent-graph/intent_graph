@@ -1,0 +1,88 @@
+meta:
+  name: Sample IG with Lenses
+  description: Fixture for testing internal lens application.
+  default_lens: focused
+nodes:
+- uid: ROOT
+  name: Auth System
+  intent: Authenticate and authorise users of the system.
+  epistemic_state: known
+  constraints:
+  - All authentication flows must produce a session token.
+  - Authorisation must be evaluated per request.
+- uid: AUTH
+  name: Authentication
+  intent: Verify the identity of an incoming caller via credentials.
+  epistemic_state: known
+  constraints:
+  - Must support password and token-based flows.
+- uid: AUTH_1
+  name: Password Login
+  intent: Authenticate a user by verifying a bcrypt-hashed password.
+  epistemic_state: known
+- uid: AUTHZ
+  name: Authorisation
+  intent: Determine whether an authenticated caller has permission to access a resource.
+  epistemic_state: known
+- uid: SESSION
+  name: Session Management
+  intent: Issue, validate, and expire session tokens.
+  epistemic_state: known
+treearcs:
+- parent: ROOT
+  child: AUTH
+- parent: ROOT
+  child: AUTHZ
+- parent: ROOT
+  child: SESSION
+- parent: AUTH
+  child: AUTH_1
+intentlinks:
+- uid: AUTH_SESSION
+  src: AUTH
+  dst: SESSION
+  intent: Authentication produces a session token consumed by Session Management.
+- uid: SESSION_AUTHZ
+  src: SESSION
+  dst: AUTHZ
+  intent: Session Management provides the session token required by Authorisation.
+lenses:
+  focused:
+    name: focused
+    description: Auth and Session only — skeleton for Authorisation branch.
+    target_uids:
+    - AUTH
+    - SESSION
+    nodes:
+      ROOT:
+        lod: lean
+      AUTH:
+        lod: full
+      AUTH_1:
+        lod: lean
+      AUTHZ:
+        lod: skeleton
+      SESSION:
+        lod: full
+      STALE.NODE:
+        lod: lean
+    intentlinks:
+    - AUTH_SESSION
+    - SESSION_AUTHZ
+  overview:
+    name: overview
+    description: All nodes at lean LOD — broad structural view.
+    nodes:
+      ROOT:
+        lod: lean
+      AUTH:
+        lod: lean
+      AUTH_1:
+        lod: lean
+      AUTHZ:
+        lod: lean
+      SESSION:
+        lod: lean
+    intentlinks:
+    - AUTH_SESSION
+    - SESSION_AUTHZ

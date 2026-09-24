@@ -1,0 +1,511 @@
+/* Webview styles. Webview-side only; uses VS Code CSS vars. */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+}
+
+#app {
+  position: absolute;
+  top: 6px;
+  left: 10px;
+  z-index: 5;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+#status {
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  z-index: 5;
+  font-family: var(--vscode-editor-font-family, monospace);
+  font-size: 0.85em;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Cytoscape container fills the viewport. */
+#cy {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Navigator minimap, bottom-right. */
+#cy-navigator {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 200px;
+  height: 150px;
+  z-index: 4;
+  border: 1px solid var(--vscode-editorWidget-border);
+  background: var(--vscode-editorWidget-background);
+  overflow: hidden;
+}
+
+/* Error / stale banner. */
+#banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: var(--vscode-inputValidation-errorBackground);
+  color: var(--vscode-inputValidation-errorForeground);
+  border-bottom: 1px solid var(--vscode-inputValidation-errorBorder, var(--vscode-editorWidget-border));
+  z-index: 6;
+  font-size: 0.9em;
+}
+#banner button {
+  margin-left: 12px;
+  padding: 2px 10px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: 1px solid var(--vscode-button-border, transparent);
+  cursor: pointer;
+}
+#banner button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+/* Loading spinner. */
+#spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+}
+.ig-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--vscode-editorWidget-border);
+  border-top-color: var(--vscode-focusBorder, #0078d4);
+  border-radius: 50%;
+  animation: ig-spin 1s linear infinite;
+}
+@keyframes ig-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty placeholder. */
+#cy.ig-empty::before {
+  content: 'This graph is empty.';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* Warning banner (yellow tint) — distinct from the red error banner.
+   Used for non-fatal warnings (orphan nodes, etc.). */
+#banner.banner-warn {
+  background: var(--vscode-inputValidation-warningBackground);
+  color: var(--vscode-inputValidation-warningForeground);
+  border-bottom-color: var(--vscode-inputValidation-warningBorder, var(--vscode-editorWidget-border));
+}
+
+/* ── HTML overlay layer ─────────────────────────────────────────────────── */
+
+/* Overlay root: covers the canvas exactly; pointer-events:none so taps pass
+   through to Cytoscape for LOD toggle. z-index 3 puts it above the canvas
+   (z-index 1) but below the expand-collapse cue layer (z-index 4+). */
+#ig-overlay-root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Full-LOD node overlay card — Amendment 2: transform-scale strategy.
+   Intrinsic width/height fixed at FULL_LOD_WIDTH × FULL_LOD_HEIGHT (set once at element creation).
+   Per-frame: only left/top/transform written by htmlOverlayLayer.ts (tickOne).
+   transform-origin: top left anchors scale to the node's screen-space top-left corner.
+   pointer-events:none — tap passes through to canvas.
+   Amendment 4: overflow: visible so wrapped text is never clipped by the reference box. */
+.ig-full-overlay {
+  position: absolute;
+  box-sizing: border-box;
+  overflow: visible;       /* Amendment 4: allow wrapped text to extend beyond reference box */
+  pointer-events: none;
+  padding: 6px 8px;
+  transform-origin: top left;
+
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 4px;
+
+  font-family: var(--vscode-editor-font-family, monospace);
+  color: var(--vscode-editor-foreground);
+
+  /* Overlay sits above canvas but below cue layer. */
+  z-index: 3;
+}
+
+/* Node name — bold, primary foreground. Literal px at reference size (Amendment 2).
+   Amendment 4: wraps instead of truncating; ellipsis removed. */
+.ig-fn-name {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--vscode-editor-foreground);
+  margin-bottom: 3px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  overflow: visible;
+}
+
+/* Intent text — slightly dimmed. Amendment 4: wraps fully, no line-clamp. */
+.ig-fn-intent {
+  font-size: 10px;
+  color: var(--vscode-editor-foreground);
+  opacity: 0.85;
+  margin-bottom: 3px;
+  white-space: normal;
+  overflow-wrap: break-word;
+  overflow: visible;
+}
+
+/* Epistemic state badge. Now editable: rendered inside an
+   .ig-edit-row flex wrapper. align-self keeps the badge at its intrinsic width at rest
+   instead of stretching to fill the row; while editing, .ig-edit-field.ig-editing (below)
+   overrides with flex:1 + input styling. */
+.ig-fn-epistemic {
+  align-self: flex-start;
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 9px;
+  margin-bottom: 3px;
+  word-break: break-all;
+}
+
+/* Constraint block. */
+.ig-fn-constraints {
+  margin-top: 3px;
+}
+
+/* Individual constraint bullet. Amendment 4: wraps fully, no line-clamp. */
+.ig-fn-constraint {
+  font-size: 9px;
+  color: var(--vscode-descriptionForeground);
+  white-space: normal;
+  overflow-wrap: break-word;
+  overflow: visible;
+}
+
+/* "+N more" overflow line. */
+.ig-fn-more {
+  font-size: 9px;
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* ── Double-click-to-edit affordance ───────────────────────────────────── */
+/* Pencil-icon button removed. Entry gesture is now
+   double-click via cy.on('dbltap') — no hover icon, no pointer-events on fields
+   except while actively editing (via .ig-editing class toggle). */
+
+/* Row wrapper for each editable field.
+   pointer-events: none so all taps pass through to Cytoscape (LOD toggle). */
+.ig-edit-row {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  pointer-events: none;
+}
+
+/* Editable field in active edit mode (.ig-editing added by JS on dbltap entry).
+   pointer-events: auto so the user can click to position the cursor and type.
+   user-select: text so text can be selected.
+   PIG LAYOUT.WRAP — edit-mode wraps fully. */
+.ig-edit-field.ig-editing {
+  outline: none;
+  border: 1px solid var(--vscode-focusBorder, #0078d4);
+  border-radius: 2px;
+  background: var(--vscode-input-background, #1e1e1e);
+  color: var(--vscode-input-foreground, #d4d4d4);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder, #0078d4);
+  pointer-events: auto;
+  user-select: text;
+  cursor: text;
+  white-space: normal;
+  overflow-wrap: break-word;
+  overflow: visible;
+  min-width: 20px;
+  flex: 1;
+}
+
+/* ── Overlay cue for compound parents ──────────────────────────────────── */
+/* Expand/collapse cue (+/-) rendered on full-LOD overlay cards for compound parent nodes.
+   Positioned at bottom-left to match the cy-side cue placement (Fix 3).
+   Visibility toggled by tickOne() based on node.isParent() state; click triggers expand/collapse. */
+
+.ig-overlay-cue {
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  width: 14px;
+  height: 14px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  cursor: pointer;
+  display: none;           /* Hidden by default; shown only when cue classes present */
+  pointer-events: auto;    /* Override parent .ig-full-overlay pointer-events: none */
+}
+
+/* Expand state: show + cue when parent is collapsed. */
+.ig-full-overlay.ig-overlay-cue-expand .ig-overlay-cue {
+  display: block;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Ccircle cx=%278%27 cy=%278%27 r=%277%27 fill=%27black%27/%3E%3Cline x1=%274%27 y1=%278%27 x2=%2712%27 y2=%278%27 stroke=%27white%27 stroke-width=%272.5%27 stroke-linecap=%27round%27/%3E%3Cline x1=%278%27 y1=%274%27 x2=%278%27 y2=%2712%27 stroke=%27white%27 stroke-width=%272.5%27 stroke-linecap=%27round%27/%3E%3C/svg%3E");
+}
+
+/* Collapse state: show - cue when parent is expanded. */
+.ig-full-overlay.ig-overlay-cue-collapse .ig-overlay-cue {
+  display: block;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Ccircle cx=%278%27 cy=%278%27 r=%277%27 fill=%27black%27/%3E%3Cline x1=%274%27 y1=%278%27 x2=%2712%27 y2=%278%27 stroke=%27white%27 stroke-width=%272.5%27 stroke-linecap=%27round%27/%3E%3C/svg%3E");
+}
+
+/* ── In-viewer lens selector ───────────────────────────────────────────── */
+/* Floating dropdown in the top-right corner of the webview.
+   Uses VS Code CSS variables; no inline styles (CSP: no unsafe-inline scripts).
+   Always visible — even when no lenses are defined (shows disabled state).
+   z-index 7 puts it above the banner (z-index 6). */
+
+#lens-selector {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Bug 3 fix: inline input row + error message stack below the button row.
+   flex-basis: 100% forces them onto their own line via flex-wrap above.    */
+.lens-selector__input-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-basis: 100%;
+}
+.lens-selector__input {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 6px;
+  background: var(--vscode-input-background, #3c3c3c);
+  color: var(--vscode-input-foreground, #cccccc);
+  border: 1px solid var(--vscode-input-border, #555555);
+  border-radius: 3px;
+  font-family: var(--vscode-font-family);
+  font-size: 0.85em;
+  outline: none;
+}
+.lens-selector__input:focus {
+  border-color: var(--vscode-focusBorder, #0078d4);
+}
+.lens-selector__input--error {
+  border-color: var(--vscode-inputValidation-errorBorder, var(--vscode-errorForeground, #f48771));
+}
+.lens-selector__msg {
+  flex-basis: 100%;
+  padding: 3px 6px;
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  color: var(--vscode-errorForeground, #f48771);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+  border-radius: 3px;
+  font-family: var(--vscode-font-family);
+  font-size: 0.8em;
+  white-space: normal;
+  word-break: break-word;
+}
+.lens-selector__msg--confirm {
+  background: var(--vscode-inputValidation-warningBackground, #5a4a1d);
+  color: var(--vscode-inputValidation-warningForeground, var(--vscode-foreground, #cccccc));
+  border-color: var(--vscode-inputValidation-warningBorder, #b89500);
+}
+
+/* Lens CRUD action buttons (+ rename trash). */
+.lens-selector__action {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--vscode-button-secondaryBackground, #3c3c3c);
+  color: var(--vscode-button-secondaryForeground, #cccccc);
+  border: 1px solid var(--vscode-dropdown-border, #555555);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--vscode-font-family);
+  font-size: 1em;
+  line-height: 1;
+}
+.lens-selector__action:hover:not(:disabled) {
+  background: var(--vscode-button-secondaryHoverBackground, #45454a);
+  border-color: var(--vscode-focusBorder, #0078d4);
+}
+.lens-selector__action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Base button. */
+.lens-selector__btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--vscode-dropdown-background, #3c3c3c);
+  color: var(--vscode-dropdown-foreground, #cccccc);
+  border: 1px solid var(--vscode-dropdown-border, #555555);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--vscode-font-family);
+  font-size: 0.85em;
+  white-space: nowrap;
+  min-width: 90px;
+  max-width: 200px;
+}
+.lens-selector__btn:hover:not(:disabled) {
+  background: var(--vscode-dropdown-listBackground, #45454a);
+  border-color: var(--vscode-focusBorder, #0078d4);
+}
+.lens-selector__btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* Active lens name label — truncates if overlong. */
+.lens-selector__label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+/* Chevron arrow. */
+.lens-selector__arrow {
+  font-size: 0.7em;
+  opacity: 0.7;
+}
+
+/* Dropdown list — appears below the button. */
+.lens-selector__list {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 100%;
+  max-width: 240px;
+  margin: 2px 0 0 0;
+  padding: 2px 0;
+  list-style: none;
+  background: var(--vscode-dropdown-background, #3c3c3c);
+  border: 1px solid var(--vscode-dropdown-border, #555555);
+  border-radius: 3px;
+  z-index: 8;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+/* Individual list item. */
+.lens-selector__item {
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: var(--vscode-font-family);
+  font-size: 0.85em;
+  color: var(--vscode-dropdown-foreground, #cccccc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lens-selector__item:hover {
+  background: var(--vscode-list-hoverBackground, #2a2d2e);
+}
+
+/* "Clear lens" item — slightly dimmed. */
+.lens-selector__item--clear {
+  color: var(--vscode-descriptionForeground, #999);
+  border-bottom: 1px solid var(--vscode-dropdown-border, #555555);
+  margin-bottom: 2px;
+}
+
+/* Active lens item — highlighted. */
+.lens-selector__item--active {
+  color: var(--vscode-list-activeSelectionForeground, #ffffff);
+  background: var(--vscode-list-activeSelectionBackground, #094771);
+}
+
+/* Empty state: no lenses defined. */
+.lens-selector--empty .lens-selector__btn {
+  font-style: italic;
+  opacity: 0.55;
+}
+
+/*
+ * PIG LAYOUT.CUES — DOM cue button on every compound node.
+ * INV-9: only the cue's click handler may transition the Compound machine.
+ * Appended to #ig-overlay-root (pointer-events: none); pointer-events: auto on
+ * the button ensures only the cue itself is clickable. tickCue() sets position
+ * inline every render frame and toggles display between none and flex.
+ */
+.ig-compound-cue {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  border-radius: 50%;
+}
+.ig-compound-cue:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.ig-compound-cue:focus {
+  outline: 1px solid var(--vscode-focusBorder, #0078d4);
+  outline-offset: 1px;
+}
+
+/* Inline error message shown below the field row on commit failure. */
+.ig-edit-error {
+  font-size: 9px;
+  color: var(--vscode-inputValidation-errorForeground, #f44);
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #f44);
+  border-radius: 2px;
+  padding: 1px 4px;
+  margin-top: 2px;
+  pointer-events: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  white-space: nowrap;
+}

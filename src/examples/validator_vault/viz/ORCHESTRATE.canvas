@@ -1,0 +1,41 @@
+{
+    "nodes": [
+        {
+            "id": "group_ORCHESTRATE",
+            "x": -50,
+            "y": -100,
+            "width": 3000,
+            "height": 1360,
+            "type": "group",
+            "label": "Orchestration"
+        },
+        {
+            "id": "node_ORCHESTRATE_1",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE.1 CLI Argument Parsing.md",
+            "x": 300,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_ORCHESTRATE_2",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE.2 Pipeline Execution.md",
+            "x": 1200,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_ORCHESTRATE_3",
+            "type": "file",
+            "file": "nodes/ORCHESTRATE.3 Summary and Exit Code.md",
+            "x": 2100,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        }
+    ],
+    "edges": []
+}

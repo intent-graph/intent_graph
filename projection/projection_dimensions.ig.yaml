@@ -1,0 +1,240 @@
+meta:
+  name: "Projection Dimensions"
+  description: >
+    The dimension ontology for code projections. Defines which rendering
+    concerns a ProjectionIG must address — the questions, not the answers.
+    Every leaf node is a decision point. Language-specific defaults live in
+    separate graphs (e.g., python_guidelines/intent_graphs/python_defaults.ig.yaml).
+
+nodes:
+  # ── ROOT ──────────────────────────────────────────────────────────────
+  - uid: PIG-DIM.ROOT
+    name: "Projection Dimensions"
+    intent: >
+      Enumerate the rendering concerns that shape how intent is projected
+      into code. Each child branch is a dimension of rendering choice.
+    epistemic_state: "undecided"
+
+  # ── L1: Structure ─────────────────────────────────────────────────────
+  - uid: PIG-DIM.STRUCT
+    name: "Structure"
+    intent: >
+      How the codebase is organized on disk — package layout, module
+      boundaries, and dependency management.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.STRUCT.PKG
+    name: "Package layout"
+    intent: >
+      Flat vs nested packages, monorepo vs multi-package, how modules
+      are grouped into directories.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.STRUCT.MOD
+    name: "Module granularity"
+    intent: >
+      Size and focus of individual modules — large monolithic files vs
+      small single-concern files, typical LOC range per file.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.STRUCT.DEP
+    name: "Dependency management"
+    intent: >
+      How third-party and internal dependencies are declared, pinned,
+      and isolated (lockfiles, version constraints, optional deps).
+    epistemic_state: "undecided"
+
+  # ── L1: Implementation ────────────────────────────────────────────────
+  - uid: PIG-DIM.IMPL
+    name: "Implementation"
+    intent: >
+      How code is written — naming, typing, paradigm choice, error
+      handling, API surface design, and import conventions.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.IMPL.NAME
+    name: "Naming conventions"
+    intent: >
+      Identifier casing (snake_case, camelCase, PascalCase), prefix/suffix
+      patterns, abbreviation policy, and naming consistency rules.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.IMPL.TYPE
+    name: "Type annotations"
+    intent: >
+      Coverage and style of type hints — full, partial, or none; runtime
+      enforcement vs static-only; generic type usage.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.IMPL.PARA
+    name: "Paradigm balance"
+    intent: >
+      Balance of OOP, functional, and imperative styles — when to use
+      classes vs functions vs dataclasses, decorator usage, metaprogramming.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.IMPL.ERR
+    name: "Error handling"
+    intent: >
+      Exception hierarchy, error propagation style (raise vs return),
+      logging patterns, and failure reporting conventions.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.IMPL.API
+    name: "API surface design"
+    intent: >
+      Public/private boundary conventions, return type patterns, parameter
+      validation style, and interface contracts.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.IMPL.IMP
+    name: "Import style"
+    intent: >
+      Import organization — absolute vs relative, star imports, lazy
+      imports, re-export conventions, and import grouping.
+    epistemic_state: "undecided"
+
+  # ── L1: Testing ───────────────────────────────────────────────────────
+  - uid: PIG-DIM.TEST
+    name: "Testing"
+    intent: >
+      How tests are written, organized, and what they cover — strategy,
+      layout, and fixture/mock style.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.TEST.STRAT
+    name: "Test strategy"
+    intent: >
+      Balance of unit, integration, and E2E tests; coverage targets;
+      what gets tested vs what is trusted.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.TEST.LAY
+    name: "Test layout and naming"
+    intent: >
+      Tests alongside code vs separate test directory, test file naming
+      conventions, test class/function naming patterns.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.TEST.FIX
+    name: "Fixture and mock style"
+    intent: >
+      How test data is provided — fixture patterns, factory functions,
+      mock usage policy, and test isolation approach.
+    epistemic_state: "undecided"
+
+  # ── L1: Documentation ─────────────────────────────────────────────────
+  - uid: PIG-DIM.DOC
+    name: "Documentation"
+    intent: >
+      How code is documented — docstring conventions, inline comments,
+      and generated documentation.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.DOC.STR
+    name: "Docstring style"
+    intent: >
+      Docstring format (Google, NumPy, Sphinx, etc.), required sections
+      (Args, Returns, Raises), and when docstrings are mandatory.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.DOC.INL
+    name: "Inline documentation"
+    intent: >
+      Comment density, when inline comments are expected vs unnecessary,
+      and conventions for TODO/FIXME/NOTE markers.
+    epistemic_state: "undecided"
+
+  # ── L1: Tooling ───────────────────────────────────────────────────────
+  - uid: PIG-DIM.TOOL
+    name: "Tooling and quality"
+    intent: >
+      Linting, formatting, and packaging conventions that shape the
+      code's surface appearance and distribution.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.TOOL.LINT
+    name: "Linting and formatting"
+    intent: >
+      Which linter/formatter is used, rule configuration, auto-format
+      policy, and pre-commit integration.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.TOOL.PKG
+    name: "Packaging conventions"
+    intent: >
+      Build system (setuptools, hatch, flit, poetry), pyproject.toml
+      structure, entry points, and distribution format.
+    epistemic_state: "undecided"
+
+  # ── L1: Performance style ─────────────────────────────────────────────
+  - uid: PIG-DIM.PERF
+    name: "Performance style"
+    intent: >
+      Code-level performance conventions — not operational profiling,
+      but how performance concerns shape code structure.
+    epistemic_state: "undecided"
+
+  - uid: PIG-DIM.PERF.CONC
+    name: "Concurrency and async patterns"
+    intent: >
+      When to use async/await vs threading vs multiprocessing, event
+      loop conventions, and concurrent data access patterns.
+    epistemic_state: "undecided"
+
+treearcs:
+  # L0 → L1
+  - parent: PIG-DIM.ROOT
+    child: PIG-DIM.STRUCT
+  - parent: PIG-DIM.ROOT
+    child: PIG-DIM.IMPL
+  - parent: PIG-DIM.ROOT
+    child: PIG-DIM.TEST
+  - parent: PIG-DIM.ROOT
+    child: PIG-DIM.DOC
+  - parent: PIG-DIM.ROOT
+    child: PIG-DIM.TOOL
+  - parent: PIG-DIM.ROOT
+    child: PIG-DIM.PERF
+  # L1 → L2: Structure
+  - parent: PIG-DIM.STRUCT
+    child: PIG-DIM.STRUCT.PKG
+  - parent: PIG-DIM.STRUCT
+    child: PIG-DIM.STRUCT.MOD
+  - parent: PIG-DIM.STRUCT
+    child: PIG-DIM.STRUCT.DEP
+  # L1 → L2: Implementation
+  - parent: PIG-DIM.IMPL
+    child: PIG-DIM.IMPL.NAME
+  - parent: PIG-DIM.IMPL
+    child: PIG-DIM.IMPL.TYPE
+  - parent: PIG-DIM.IMPL
+    child: PIG-DIM.IMPL.PARA
+  - parent: PIG-DIM.IMPL
+    child: PIG-DIM.IMPL.ERR
+  - parent: PIG-DIM.IMPL
+    child: PIG-DIM.IMPL.API
+  - parent: PIG-DIM.IMPL
+    child: PIG-DIM.IMPL.IMP
+  # L1 → L2: Testing
+  - parent: PIG-DIM.TEST
+    child: PIG-DIM.TEST.STRAT
+  - parent: PIG-DIM.TEST
+    child: PIG-DIM.TEST.LAY
+  - parent: PIG-DIM.TEST
+    child: PIG-DIM.TEST.FIX
+  # L1 → L2: Documentation
+  - parent: PIG-DIM.DOC
+    child: PIG-DIM.DOC.STR
+  - parent: PIG-DIM.DOC
+    child: PIG-DIM.DOC.INL
+  # L1 → L2: Tooling
+  - parent: PIG-DIM.TOOL
+    child: PIG-DIM.TOOL.LINT
+  - parent: PIG-DIM.TOOL
+    child: PIG-DIM.TOOL.PKG
+  # L1 → L2: Performance
+  - parent: PIG-DIM.PERF
+    child: PIG-DIM.PERF.CONC
+
+intentlinks: []

@@ -1,0 +1,37 @@
+kind: intentnode
+version: v0-sketch
+required:
+- uid
+- name
+- intent
+optional:
+- design_notes
+- examples
+- guardrails
+- effort
+- notes
+fields:
+  uid:
+    type: string
+    description: Stable hierarchical UID (e.g., D.1.2).
+  name:
+    type: string
+    description: Short human label.
+  intent:
+    type: string
+    description: 'WHAT: the intended behavior/role; level-consistent across refinement.'
+  design_notes:
+    type: string
+    description: 'HOW bias: preferred approach/constraints rationale; optional.'
+  examples:
+    type: list[string]
+    description: Concrete ground-truth examples; highly valuable.
+  guardrails:
+    type: list[string]
+    description: Hard constraints; must-not-violate statements.
+  effort:
+    type: string
+    description: Free-text guidance on attention/effort (e.g., high correctness critical).
+  notes:
+    type: string
+    description: Optional extra context (kept small; avoid becoming a dumping ground).

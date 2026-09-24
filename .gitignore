@@ -1,0 +1,25 @@
+.venv/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+node_modules/
+dist/
+*.vsix
+test-results/
+**/test/traces/
+.backups/
+.env
+.env.*
+.DS_Store
+DOC_MANIFEST_*
+.obsidian/
+
+# Exception: the example vault opens with this config so a reader can open it
+# directly in Obsidian.
+!src/examples/validator_vault/.obsidian/
+src/examples/validator_vault/.obsidian/workspace.json
+*.egg-info/
+*.env

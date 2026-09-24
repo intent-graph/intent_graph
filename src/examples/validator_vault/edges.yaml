@@ -1,0 +1,199 @@
+- from: ROOT
+  to: DISCOVER
+  type: treearc
+
+- from: ROOT
+  to: PARSE
+  type: treearc
+
+- from: ROOT
+  to: VALIDATE
+  type: treearc
+
+- from: ROOT
+  to: REPORT
+  type: treearc
+
+- from: ROOT
+  to: ORCHESTRATE
+  type: treearc
+
+- from: DISCOVER
+  to: DISCOVER.1
+  type: treearc
+
+- from: DISCOVER
+  to: DISCOVER.2
+  type: treearc
+
+- from: DISCOVER
+  to: DISCOVER.3
+  type: treearc
+
+- from: PARSE
+  to: PARSE.1
+  type: treearc
+
+- from: PARSE
+  to: PARSE.2
+  type: treearc
+
+- from: PARSE
+  to: PARSE.3
+  type: treearc
+
+- from: VALIDATE
+  to: VALIDATE.1
+  type: treearc
+
+- from: VALIDATE
+  to: VALIDATE.2
+  type: treearc
+
+- from: VALIDATE
+  to: VALIDATE.3
+  type: treearc
+
+- from: VALIDATE
+  to: VALIDATE.4
+  type: treearc
+
+- from: REPORT
+  to: REPORT.1
+  type: treearc
+
+- from: REPORT
+  to: REPORT.2
+  type: treearc
+
+- from: ORCHESTRATE
+  to: ORCHESTRATE.1
+  type: treearc
+
+- from: ORCHESTRATE
+  to: ORCHESTRATE.2
+  type: treearc
+
+- from: ORCHESTRATE
+  to: ORCHESTRATE.3
+  type: treearc
+
+- from: DISCOVER
+  to: VALIDATE
+  type: intentlink
+  uid: DISCOVER_VALIDATE
+  intent: "Discovery provides FunctionRecord dict (schema.name -> generated/source parsed data) consumed by Validation for comparison."
+
+- from: DISCOVER
+  to: REPORT
+  type: intentlink
+  uid: DISCOVER_REPORT
+  intent: Discovery provides FunctionRecord dict to Reporter for source location paths and context in report tables.
+
+- from: PARSE
+  to: DISCOVER
+  type: intentlink
+  uid: PARSE_DISCOVER
+  intent: Discovery depends on the Parser to extract signatures and bodies from .sql files during both generated cache scanning and source directory scanning.
+
+- from: VALIDATE
+  to: REPORT
+  type: intentlink
+  uid: VALIDATE_REPORT
+  intent: "Validation produces ValidationReport (list of ValidationResult with severity, issues, details) consumed by Reporter to generate output files."
+
+- from: ORCHESTRATE
+  to: DISCOVER
+  type: intentlink
+  uid: ORCHESTRATE_DISCOVER
+  intent: Orchestrator calls FunctionDiscovery.discover_all() to start the pipeline.
+
+- from: ORCHESTRATE
+  to: VALIDATE
+  type: intentlink
+  uid: ORCHESTRATE_VALIDATE
+  intent: Orchestrator iterates through discovered functions and calls FunctionValidator.validate_function() for each.
+
+- from: ORCHESTRATE
+  to: REPORT
+  type: intentlink
+  uid: ORCHESTRATE_REPORT
+  intent: Orchestrator calls ReportGenerator.generate_all() with results and functions.
+
+- from: PARSE.1
+  to: DISCOVER.1
+  type: intentlink
+  uid: PARSE.1_DISCOVER.1
+  intent: Generated cache scanning uses signature extraction to create ParsedFunction objects.
+  parent: PARSE_DISCOVER
+
+- from: PARSE.1
+  to: DISCOVER.2
+  type: intentlink
+  uid: PARSE.1_DISCOVER.2
+  intent: Source scanning uses signature extraction to identify functions in multi-statement files.
+  parent: PARSE_DISCOVER
+
+- from: PARSE.2
+  to: DISCOVER.1
+  type: intentlink
+  uid: "PARSE.2_DISCOVER.1#body"
+  intent: Generated cache scanning uses body extraction for each function.
+  parent: PARSE_DISCOVER
+
+- from: PARSE.2
+  to: DISCOVER.2
+  type: intentlink
+  uid: "PARSE.2_DISCOVER.2#body"
+  intent: Source scanning uses body extraction for each parsed function.
+  parent: PARSE_DISCOVER
+
+- from: PARSE.3
+  to: PARSE.1
+  type: intentlink
+  uid: PARSE.3_PARSE.1
+  intent: Type normalization is called during signature extraction to normalize parameter and return types.
+
+- from: PARSE.3
+  to: VALIDATE.2
+  type: intentlink
+  uid: PARSE.3_VALIDATE.2
+  intent: Type normalization enables signature comparison by resolving aliases.
+
+- from: PARSE.3
+  to: VALIDATE.3
+  type: intentlink
+  uid: PARSE.3_VALIDATE.3
+  intent: Type normalization is used during body comparison for consistent type names.
+
+- from: VALIDATE.1
+  to: VALIDATE.4
+  type: intentlink
+  uid: VALIDATE.1_VALIDATE.4
+  intent: "Existence check results (missing source = CRITICAL, missing DB = WARNING) determine initial severity classification."
+
+- from: VALIDATE.2
+  to: VALIDATE.4
+  type: intentlink
+  uid: VALIDATE.2_VALIDATE.4
+  intent: Signature mismatch results (language difference = CRITICAL) feed severity assignment.
+
+- from: VALIDATE.3
+  to: VALIDATE.4
+  type: intentlink
+  uid: VALIDATE.3_VALIDATE.4
+  intent: Body mismatch results (any difference = WARNING with similarity score) feed severity assignment.
+
+- from: VALIDATE.4
+  to: REPORT.1
+  type: intentlink
+  uid: VALIDATE.4_REPORT.1
+  intent: Severity-classified results drive the grouping and ordering of the markdown report.
+  parent: VALIDATE_REPORT
+
+- from: VALIDATE.4
+  to: REPORT.2
+  type: intentlink
+  uid: VALIDATE.4_REPORT.2
+  intent: Severity-classified results are serialized into the JSON data structure.
+  parent: VALIDATE_REPORT

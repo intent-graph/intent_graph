@@ -1,0 +1,1540 @@
+meta:
+  name: vscode_viewer ProjectionIG
+  description: 'Projection intent governing how IntentGraphs are rendered and edited
+    inside the VS Code custom editor panel (vscode_viewer); applies to any product
+    IG opened via the intentgraph-vscode extension.
+
+    '
+  kind: projection_ig
+nodes:
+- uid: ROOT
+  name: vscode_viewer Projection
+  intent: 'Govern every rendering, interaction, editing, and persistence decision
+    for the vscode_viewer so that any agent or developer can derive correct behaviour
+    from this graph alone, without reading external docs or source comments.
+
+    '
+  epistemic_state: 'known: development closed the major gaps that the prior epistemic state
+    called out. INTERACTION.{GESTURES,MODES,DRAG,FOCUS,ROUTER}, LAYOUT.{CUES,OVERLAY},
+    EDITING.{ENTER,SCOPE,EXIT,PERSISTENCE}, LENS_UI.CTRLPANEL.{1,2,3,4}, and PERSISTENCE.{POSITIONS,AUTOSAVE,AUTOCREATE}
+    are implemented and exercised; remaining `gap:` annotations are deferred items
+    (live drag clipping, per-compound layout) and NOT regressions.'
+  constraints:
+  - No vscode.* API may be used inside the webview bundle.
+  - No cytoscape or elkjs may be imported in the extension host.
+  - 'Content Security Policy: no inline scripts; no eval; no blob: URIs for scripts.
+    Only listed CDN/local sources allowed. Unchanged from earlier locked policy.
+
+    '
+  - Intent is source of truth (P1); vscode_viewer is a projection, not the canonical
+    model.
+  impl_pointers: src/editor/IntentGraphEditorProvider.ts (host boundary); src/webview/main.ts
+    (webview entry)
+  history:
+  - who: agent:ig-designer-agent
+    date: '2026-04-27'
+    note: Initial PIG authored from early design docs and user feedback.
+- uid: AUDIENCE
+  name: Primary Audience
+  intent: 'Identify who uses vscode_viewer and what they need from it, so that every
+    rendering and interaction decision has a clear user to satisfy.
+
+    '
+  epistemic_state: known
+  constraints:
+  - 'Two roles: architect (reads/edits the graph) and agent reviewer (validates agent
+    output).'
+  - 'Both roles need to read intent text at full LOD without eyestrain; both may submit
+    text edits; neither uses the viewer for structural graph authoring (that is ig-tool''s
+    job).
+
+    '
+  design_notes: 'Structural authoring (add/remove nodes, reparent) is deliberately
+    excluded from vscode_viewer scope (Phase 1/2 boundaries). Edits are confined to
+    field text so the viewer is not an alternative to ig-tool but a companion to it.
+    Projection-side rationale: rendering choices (text size, color contrast, no-jargon
+    diagnostics) are derived from these user descriptions; AUDIENCE is present here
+    to motivate those rendering decisions, not to duplicate product IG content.'
+- uid: OPERATIONS
+  name: User Operations
+  intent: 'Define the five primitive operations the user can perform inside vscode_viewer,
+    so that interaction design and keyboard shortcuts can be derived from a closed
+    vocabulary.
+
+    '
+  epistemic_state: known
+  constraints:
+  - 'Operations: Read (navigate, inspect), Navigate (pan/zoom, expand/collapse), Toggle
+    LOD, Edit (enter/commit/cancel), Apply Lens, Manage Lens (create/rename/delete).'
+  - 'Persist View is implicit: positions and lens changes are saved; pan/zoom is ephemeral.'
+  - No operation may leave the IG file in an inconsistent state.
+- uid: INTERACTION
+  name: Interaction Model
+  intent: 'Define the gesture vocabulary, the two modes (view vs edit), and the focus
+    rules so that the user always knows what a click/double-click/drag will do.
+
+    '
+  epistemic_state: 'observed | risky: tap-suppression race in the double-click/drag gesture handling'
+  constraints:
+  - 'Four verbs: single-click (LOD toggle), double-click (enter edit), drag (reposition
+    node), click-control (lens control panel actions).'
+  - Edit mode and view mode are mutually exclusive; the mode a node is in must be
+    visually obvious.
+  impl_pointers: 'src/webview/cyMount.ts (gesture wiring: wireTapLOD, wireDblTapEdit)'
+- uid: LAYOUT
+  name: Visual Layout
+  intent: 'Define the layout model: ELK as the sole layout engine, the three LOD tiers
+    with their pixel contracts, the overlay transform system, expand/collapse invariants,
+    and the layout algorithm strategy, so that visual dimensions and algorithm choices
+    are never scattered across ad-hoc constants.'
+  epistemic_state: 'known | unvalidated: full-LOD dimension in code (320x360 Amend
+    4) must be updated to canonical 240x180 before next build'
+  constraints:
+  - ELK runs once at structural mount. No relayout on LOD toggle or lens apply.
+  - 'Rect dimensions are derived (never stored): rect = f(lod, collapse-state-of-self,
+    collapse-state-of-descendants).'
+  - Tier defaults are canonical in LAYOUT.RECT data_registry. No dimension literal
+    in rendering code.
+  impl_pointers: src/webview/elkBridge.ts (LEAF_WIDTH, LEAF_HEIGHT, FULL_LOD_WIDTH,
+    FULL_LOD_HEIGHT)
+- uid: EDITING
+  name: Bidirectional Editing
+  intent: 'Define the complete edit lifecycle -- entry, scope, exit, and write-back
+    -- so that field edits in the viewer always reach the IG YAML file reliably.
+
+    '
+  epistemic_state: 'observed | gap: edit-save silent failure diagnosed.
+    Root cause is fileHash mismatch producing ok=false with no visible feedback. Exit
+    condition (''click outside whole node'') partially implemented via blur but glitchy
+    per user report.
+
+    '
+  constraints:
+  - Edit mode entry is via double-click only (INTERACTION.GESTURES).
+  - 'ALL fields of a node (name, intent, constraints array) are editable simultaneously
+    in one unified form. NOT field-by-field sequential editing. User: ''All the content
+    of the detailed node should be editable in the same edit mode.''
+
+    '
+  - A single atomic write (EditNodeRequestType) commits all changed fields at once.
+  - DOM must NOT be updated optimistically. Fields update only after ok=true from
+    host.
+  - 'On ok=false: revert overlay fields to pre-edit values; display non-dismissable
+    error banner.'
+  impl_pointers: 'src/messaging/messageTypes.ts::EditNodeRequestType; src/host/yamlEdit.ts;
+    src/webview/overlay/htmlOverlayLayer.ts
+
+    '
+- uid: LENS_UI
+  name: Lens Control Panel
+  intent: Provide a persistent lens control panel in the top-right of the webview
+    panel so that users can manage lenses (switch, create, rename, delete) and always
+    see the active lens without using the command palette.
+  epistemic_state: 'known: control panel implemented across PIG LENS_UI.CTRLPANEL.{1,2,3,4}.
+    Top-right panel with dropdown + three action buttons; always present; CRUD synchronous
+    with the IG file via the new lensCrud.ts module.'
+  constraints:
+  - Control panel is always present in the top-right of the webview panel. Z-index
+    above graph canvas.
+  - 'Panel max-height: 40px. Controls laid out horizontally.'
+  - Rendered before cy init; does not depend on Cytoscape being ready.
+  - Panel is always visible when the viewer is open (not gated on lens count).
+  - 'Panel contains: active-lens dropdown, New (+), Rename (pencil), Delete (trash)
+    controls.'
+  - No Save or Discard buttons -- auto-save model applies (PERSISTENCE.AUTO_SAVE).
+  - Existing diagnostics banner remains in its current bottom position.
+  design_notes: The user explicitly rejected lenses being called 'projections' in
+    the strict P4 sense. Lenses are view configuration -- selection + per-node visual
+    choices (lod, position). The control panel surfaces this view-configuration UX
+    directly in the GUI.
+  impl_pointers: 'src/webview/main.ts (lens selector DOM -- to be added); src/editor/IntentGraphEditorProvider.ts::openLens
+
+    '
+- uid: PERSISTENCE
+  name: Persistence Policy
+  intent: Define precisely what is saved where (lens entry vs workspaceState vs in-memory)
+    so that nothing is silently lost and nothing pollutes the wrong storage tier.
+  epistemic_state: 'known | gap: AUTOSAVE and AUTOCREATE not yet implemented; POSITIONS
+    schema requires LENSSCHEMA upstream changes first; edit-save silent-failure fix
+    pending (see children)'
+  constraints:
+  - 'IG file: field text edits only. Canonical, git-tracked, shareable.'
+  - 'Lens (inside IG file): per-node lod, per-node position (x, y). User-decidable
+    visual state.'
+  - 'workspaceState: ephemeral pan/zoom only. Nothing else.'
+  - 'In-memory (PanelEntry): active lens name; active fileHash; selfWritePath flag.'
+  - Lens carries a list of which intentlinks are visible (per existing LensConfig.intentlinks
+    field); not all intentlinks are shown in every lens.
+  design_notes: Lenses are view configuration -- user-decidable visual state (lod,
+    position). They are NOT projections in the strict P4 sense (no content transformation,
+    just selection + per-node visual choices). The vscode_viewer ITSELF remains a
+    real ProjectionIG (it projects the IG into a GUI). Lens = view configuration.
+    Viewer = projection. Pan/zoom stays in workspaceState as ephemeral per D16 of
+    LENS_REDESIGN_SPEC.
+- uid: DIAGNOSTICS
+  name: Diagnostics and Logging
+  intent: 'Define how the extension surfaces errors, warnings, and debug information
+    to the user and to developers so that silent failures are eliminated.
+
+    '
+  epistemic_state: 'observed | gap: edit ok=false responses not logged to output channel;
+    conflict banner too easily dismissed | undecided: DIAGNOSTICS.LOGGING coverage
+    of error events incomplete'
+  constraints:
+  - All ok=false responses from host operations MUST be logged to the extension output
+    channel.
+  - 'Extension output channel name: ''IntentGraph''. Created once on extension activation.'
+  - User-facing errors use non-dismissable banners in the webview panel.
+  - Non-blocking warnings use dismissable banners.
+  impl_pointers: src/editor/IntentGraphEditorProvider.ts (output channel); src/webview/main.ts
+    (banner DOM)
+- uid: NON_GOALS
+  name: Explicit Non-Goals
+  intent: 'Record what vscode_viewer will NOT do so that future sessions do not add
+    these features under pressure and so scope creep has a named boundary.
+
+    '
+  epistemic_state: known
+  constraints:
+  - No lens diff/merge UI. Lens content is edited via ig-tool or direct YAML.
+  - No agent dialogue UI (no chat pane, no elicitor integration).
+  - No reintegrate UI (reduced-IG sync back to parent). Use ig-tool lens reintegrate.
+  - No add/remove/reparent nodes from the GUI (Phase 1/2 boundary).
+  - No WebGL renderer. Canvas renderer is locked (dashed edges require canvas).
+  - No web-worker elkjs (deferred to a future wave for large graphs).
+  - No WebviewPanelSerializer for cross-session state restore (deferred).
+- uid: INVARIANTS
+  name: Cross-Cutting Invariants
+  intent: 'Enumerate the rules that apply across all subsystems and that nothing may
+    break, so that any change can be validated against a single checklist.
+
+    '
+  epistemic_state: known
+  constraints:
+  - 'INV-1: No vscode.* API in the webview bundle.'
+  - 'INV-2: No cytoscape or elkjs imports in the extension host.'
+  - 'INV-3: CSP -- no inline scripts, no eval, no blob: script sources.'
+  - 'INV-4: No relayout on LOD toggle. ELK runs once at structural mount only.'
+  - 'INV-5: Intent is source of truth. The IG file is canonical; viewer state is derivative.'
+  - 'INV-6: No optimistic DOM update for edits. Write must succeed before DOM changes.'
+  - 'INV-7: Overlay visibility is coupled to node visibility. An overlay must never
+    be visible when its node is not visible.'
+  - 'INV-8: Lens is the only store for user-authored visual state. Product nodes hold
+    no rendering data. Positions and LOD assignments belong exclusively in LensConfig.nodes
+    entries.'
+  - 'INV-9: A compound node''s collapsed/expanded state changes only as a result of
+    (a) the user clicking the cue handled by CueLayer, or (b) programmatic state restoration
+    when a Lens is applied or a structural reload restores prevCollapseSet. No other
+    code path may trigger it (no drag, no overlap, no selection, no library-internal
+    handler, no LOD toggle).'
+- uid: LENSSCHEMA
+  name: IG-Core Lens Schema Changes
+  intent: Capture the upstream IG-core changes required to support positions in lens
+    entries, so that the implementation scope is explicit before any IG-core agent
+    is dispatched.
+  epistemic_state: 'known: scope defined; implementation not started | gap: L1 UID
+    rename (LENSSCHEMA -> IGCORE) deferred -- rename cascades through 5 child UIDs
+    and 1 intentlink; diff cost exceeds LOW-priority benefit'
+  constraints:
+  - All changes are in src and agents_runtime. The vscode_viewer does not own these
+    changes.
+  - The new LensNodeEntry shape is not backward-compatible with the old scalar lod-string
+    shape.
+  - A one-off migration script rewrites all test fixtures before merge.
+  design_notes: The user-decidable visual state principle requires the lens schema
+    to carry both lod and position. The current LensConfig.nodes shape (dict[uid,
+    lod_str]) stores only lod. This must be widened to dict[uid, {lod, position?}]
+    so that positions can travel alongside lod in the same entry.
+- uid: OBSERVABILITY
+  name: Session Trace Observability
+  intent: 'Guarantee that any panel session is reconstructible from disk after the
+
+    fact, by emitting a structured causality trace as the extension runs.
+
+    A reader (human, or AI agent on a later turn) can `tail` the latest
+
+    JSONL log and reconstruct what the extension actually did — which
+
+    gestures fired, which suppression decisions ran, which compound
+
+    transitions originated where, which reloads the file watcher
+
+    triggered, whether the lens menu mounted at all. The product is
+
+    observable by construction; bug reports become diagnosable from
+
+    disk evidence rather than from re-running the extension and hoping
+
+    to reproduce the symptom.
+
+    '
+  epistemic_state: 'known: implemented across the initial trace layer
+    and a later pass adding the writeIgFile wrapper + content-hash reload gate + lifecycle hardening.
+    All eight constraints have landed in code. Test count 138/138; all four product-contract
+    assertions in test/unit/trace.test.mjs pass.'
+  constraints:
+  - Every state-machine transition (LOD per node, Compound per parent, Mode global)
+    emits a trace entry tagged with the transition's cause and a correlation id where
+    causation crosses event boundaries.
+  - Every ec.expand / ec.collapse / ec.expandRecursively / ec.collapseRecursively
+    call goes through a single wrapper (src/webview/overlay/ecWrap.ts) that logs the
+    caller and the cause. Direct calls outside the wrapper are forbidden — this enforces
+    INVARIANTS INV-9 via the trace shape, not just the comment.
+  - 'Every reload boundary (file watcher fire, applyLens, structural rebuild) logs
+    its reason. Reloads pass through THREE gates in order: (1) selfWritePath suppression
+    (existing); (2) content-hash gate — if the file''s SHA-256 matches entry.lastLoadedFileHash,
+    the reload is suppressed and a kind:''reloadSuppressed'' entry with cause:''contentUnchanged''
+    is emitted; (3) if both fall through, a fresh corr is generated, stamped on entry.pendingReloadCorr,
+    and emitted with kind:''reload'' so the LoadGraph handler''s applyLensReinstate
+    references the same corr.'
+  - Every file write to the IG path goes through src/host/diskWrite.ts::writeIgFile,
+    which emits a kind:'fileWrite' entry with cause:<helper-name> (e.g. 'autosave.parseAndMutateLensPosition',
+    'lensCrud.createLens', 'yamlEdit.applyFieldEdit'). Direct fs.writeFile calls to
+    the IG path outside this wrapper are forbidden. Catches reload-loop sources because
+    the trace shows which helper fires the periodic write.
+  - Lifecycle markers fire on router / cueLayer / lensSelector mount with cardinality
+    (compoundCount, buttonCount) so 'didn't mount' is detectable from the trace alone.
+    initTrace() runs in the App constructor BEFORE LensSelector is constructed so
+    the lensSelectorMounted entry is captured.
+  - Trace path is configurable via intentgraph.trace.path; default lives at <workspace>/.intentgraph-traces/
+    and falls back to <extension-dir>/test/traces/ if no workspace folder is open.
+    Latest session symlinked as latest.jsonl for tail-friendly access (regular-file
+    copy fallback on systems without symlink support). The sessionStart entry includes
+    the resolved traceDir, traceFile, and pathSource so a reader can confirm at a
+    glance which directory the trace landed in.
+  - 'Trace is ON BY DEFAULT. User can disable per-workspace via setting intentgraph.trace.enabled:
+    false. Automatic rotation: keep the last 5 sessions, delete older. Two commands
+    available: intentgraph.trace.toggle (flips workspace setting), intentgraph.trace.mark
+    (prompts for label, emits a marker entry).'
+  - 'Trace format is JSONL with a documented schema, versioned (schemaVersion: 1,
+    embedded in the sessionStart entry). Each entry carries: ts (ISO RFC 3339), seq
+    (monotonic per-panel — separate webview-side and host-side counters), src (one
+    of router|cue|overlay|host|lens|app), kind (lowerCamelCase), cause (when not implied
+    by kind), corr (correlation id, used across the dbltap→editEnter→pointerdown chain,
+    the cueClick→ecCall chain, and the watcher→reload→applyLensReinstate chain).'
+  - 'Session boundaries: sessionStart entry on TraceSink construction (with schemaVersion,
+    pid, vscodeVersion, traceDir, pathSource, traceFile); sessionEnd entry on close()
+    so a reader can distinguish a clean shutdown from a trace cut off mid-event.'
+  - 'Test invariant: test/unit/trace.test.mjs includes (a) a schema check on a representative
+    trace fixture, (b) a sequence-sanity test that asserts a known gesture produces
+    the expected corr-linked event chain, (c) a grep test that asserts every ec.expand
+    / ec.collapse callsite in src/ goes through the wrapper, and (d) the rotation
+    pure helper. Absence of telemetry is a build failure, not a silent regression.'
+  design_notes: "OBSERVABILITY vs DIAGNOSTICS — they are siblings, not parent/child.\
+    \ DIAGNOSTICS\nsurfaces errors to the user (banners, output channel) at human\
+    \ timescale.\nOBSERVABILITY emits structured causality traces to disk for developer/agent\n\
+    consumption at machine timescale. Different audience, different storage,\ndifferent\
+    \ retention.\n\nEvent surface — covered by current implementation:\n  - router:\
+    \ tap (with suppression reason if early-return), dbltap (generates\n    corr),\
+    \ document-level pointerdown (with targetInCard / targetInChrome /\n    commitDecision),\
+    \ keydown Escape (only when something is editing),\n    grab, free (with wasActualDrag\
+    \ and snap-back outcome).\n  - cue: cueLayerMounted (with compoundCount); cueClick\
+    \ (passes corr into\n    the ec wrapper, so the resulting ecCall entry references\
+    \ the same corr).\n  - overlay: editEnter (receives corr from caller), editCommit\
+    \ (with\n    fieldsChanged count, hostOk, error if any), editCancel.\n  - host:\
+    \ ecCall (centralised wrapper, with method+caller+cause),\n    fileWrite (every\
+    \ IG file write with cause+bytes+tmp+selfWritePathSet),\n    reload (reason +\
+    \ selfWritePath verdict + content-hash gate result +\n    corr), reloadSuppressed\
+    \ (cause: selfWritePathMatch | contentUnchanged),\n    applyLensReinstate (carries\
+    \ the reload's corr), every lens CRUD message.\n  - lens: lensSelectorMounted\
+    \ with cardinality of buttons found (the bug-3\n    diagnostic — if buttons aren't\
+    \ found, the trace says so explicitly);\n    every pick / CRUD action with host\
+    \ result.\n  - markers: sessionStart (with schemaVersion + traceDir + pathSource),\n\
+    \    sessionEnd, manual user-invoked mark via command palette\n    (intentgraph.trace.mark).\n\
+    \nAnti-instrumentation (what NOT to log): tickAll (60 fps render noise),\nindividual\
+    \ overlay show/hide (deterministic from logged taps), drag deltas\n(only grab/free\
+    \ bookend), isCollapsible / isExpandable reads (no state\nmutation). Smart instrumentation\
+    \ captures causality, not events.\n\nThe content-hash reload gate\
+    \ is the most architecturally\nimportant addition. macOS FSEvents and VS Code's\
+    \ FileSystemWatcher fire\non metadata-only events; without a content gate, every\
+    \ fire triggered a\nstructural reload, which itself ran applyLens and could write\
+    \ the file,\nwhich fired the watcher again — a feedback loop. The gate reads the\
+    \ file,\ncomputes SHA-256, and compares to entry.lastLoadedFileHash; if they\n\
+    match, the reload is silently suppressed and a kind:'reloadSuppressed'\nentry\
+    \ with cause:'contentUnchanged' is emitted instead. This is the\ndefensive layer\
+    \ — the right thing regardless of why the watcher fires.\n\nJSONL line examples\
+    \ (canonical schema):\n{\"schemaVersion\":1,\"ts\":\"2026-04-30T11:34:01.123Z\"\
+    ,\"seq\":0,\"src\":\"host\",\"kind\":\"sessionStart\",\"data\":{\"pid\":67799,\"\
+    vscodeVersion\":\"1.118.1\",\"traceDir\":\"/path/.intentgraph-traces\",\"pathSource\"\
+    :\"workspaceFolder\",\"traceFile\":\"/path/.intentgraph-traces/trace-2026-04-30T11-34-01Z.jsonl\"\
+    }}\n{\"ts\":\"2026-04-30T11:34:02.456Z\",\"seq\":12,\"src\":\"router\",\"kind\"\
+    :\"dbltap\",\"corr\":\"c-12-a3f7\",\"data\":{\"uid\":\"DISCOVER\",\"currentLod\"\
+    :\"lean\",\"action\":\"promoteThenEdit\"}}\n{\"ts\":\"2026-04-30T11:34:03.001Z\"\
+    ,\"seq\":3,\"src\":\"host\",\"kind\":\"reloadSuppressed\",\"data\":{\"reason\"\
+    :\"watcher\",\"uri\":\"/path/file.ig.yaml\",\"cause\":\"contentUnchanged\",\"\
+    hashPrefix\":\"d41d8cd98f00\"}}\n\nRotation: on TraceSink construction, scan the\
+    \ trace dir; if more than 5\ntrace-*.jsonl files exist, delete the oldest until\
+    \ 5 remain. The\nlatest.jsonl symlink points at the current file for tail-friendly\n\
+    access; on systems where symlinks aren't available, fall back to a\nregular-file\
+    \ copy at session close.\n"
+  impl_pointers: src/host/trace.ts (TraceSink — path resolution, append queue, rotation,
+    sessionStart/End markers); src/host/diskWrite.ts (writeIgFile + registerTraceSink
+    — every IG file write goes through here); src/webview/trace.ts (webview emitter
+    with monotonic seq + corr helper); src/webview/overlay/ecWrap.ts (single wrapper
+    for all four ec methods); src/editor/IntentGraphEditorProvider.ts (scheduleReload
+    with the three-gate reload pipeline + content-hash gate; PanelEntry.lastLoadedFileHash
+    + pendingReloadCorr); test/unit/trace.test.mjs (schema, sequence, rotation, grep
+    invariant).
+- uid: INTERACTION.GESTURES
+  name: Gesture Vocabulary
+  intent: 'Enumerate every recognised pointing gesture and what it does in each mode,
+    so that no gesture is ambiguous and the three-verb contract is enforced in one
+    place.
+
+    '
+  epistemic_state: known
+  constraints:
+  - Single-click on a node body in view mode toggles LOD between lean and full.
+  - Double-click on a node body enters edit mode. If the node is currently lean, the
+    LOD machine first transitions it to full; the Mode machine then enters edit on
+    the next render frame (single coherent action, no intermediate user step required).
+  - Drag on any node in view mode repositions the node; the drag-end event captures
+    the new position.
+  - Click on the cue (LAYOUT.CUES) is the EXCLUSIVE trigger for compound expand/collapse;
+    no other gesture or event may invoke it (see INVARIANTS INV-9).
+  - No gesture is valid on a node that is in edit mode except a click outside its
+    overlay (which exits edit mode) or Escape (which cancels).
+  - 'Tap-vs-dbltap suppression is state-based, not timing-based. The Mode machine''s
+    editingUid (set by dbltap before Cytoscape fires the trailing synthetic taps)
+    is the single source of truth: any tap arriving while editingUid is set for the
+    tapped node is ignored by the LOD-toggle handler.'
+  - Single-click LOD toggle and drag-release both fire the PERSISTENCE.AUTOSAVE debounce.
+  design_notes: 'Router refactor: timing-based 350ms dbltap suppression window
+    replaced by explicit state guard (editingUid check). Cytoscape fires `dbltap`
+    BEFORE the trailing synthetic `tap` events, so dbltap can set state.editingUid
+    first; subsequent taps see editingUid set for that node and skip. Dbltap-on-lean
+    is now a coherent promote-then-edit instead of a no-op.'
+  impl_pointers: src/webview/interaction/gestureRouter.ts (single owner of all five
+    gestures); src/webview/cyMount.ts (thin adapter retained only for cy mount + dispose)
+  data_registry:
+    timings:
+      dbltap_suppression_ms: 350
+      fit_animation_ms: 250
+      drag_debounce_ms: 500
+- uid: INTERACTION.MODES
+  name: Node State Machines
+  intent: 'A node''s visible behavior is governed by three orthogonal binary state
+
+    machines: LOD (lean / full), Compound state (collapsed / expanded),
+
+    and Mode (view / edit). Every pointer event must resolve to a
+
+    transition in exactly one of these, with no cross-talk. Without this
+
+    separation, the same event (a tap on a compound parent) is ambiguous
+
+    and the UI becomes non-deterministic.
+
+    '
+  epistemic_state: 'known: three orthogonal machines (LOD / Compound / Mode) specified.
+    Router pending — src/webview/interaction/gestureRouter.ts introduces
+    the single owner of cy and document-level event listeners; explicit state guards
+    replace timing-based suppression.'
+  constraints:
+  - 'LOD machine (per node): lean and full are exclusive. Default is lean. Transition:
+    single-click on node body in view mode.'
+  - 'Compound machine (per compound node only): collapsed and expanded are exclusive.
+    Default is collapsed. Transition: click on the cue (LAYOUT.CUES). No other event
+    may transition this machine (INVARIANTS INV-9).'
+  - 'Mode machine (global, at most one node in edit mode): view and edit are exclusive.
+    Default is view. Transition into edit: double-click on a full-LOD node body. Transition
+    out of edit: click outside the editing node''s overlay, or Escape.'
+  - 'Orthogonality: the three machines transition independently. A LOD transition
+    does not change Compound state. A Compound transition does not change LOD. Entering
+    edit mode does not change LOD or Compound.'
+  - Only one node may be in edit mode at any time. While a node is in edit mode, all
+    gesture handlers that would transition any machine for that node are suppressed
+    except the exit transition.
+  - On edit-mode entry, the camera centers on the node (see INTERACTION.FOCUS).
+  examples:
+  - 'Lean -> full: single-click on a leaf node in view mode flips its LOD to full.
+    Compound state unchanged. Mode unchanged.'
+  - 'Expanded -> collapsed: click the cue on an expanded compound. Compound state
+    flips. LOD of that node unchanged. Mode unchanged.'
+  - 'View -> edit: double-click on a full-LOD node. Mode becomes edit for that node.
+    LOD unchanged. Compound state unchanged.'
+  - 'Forbidden: a drag that overlaps another compound node MUST NOT collapse or expand
+    the dragged-onto node. Forbidden: a single click on a compound''s body MUST NOT
+    collapse or expand it (only the cue does that).'
+  impl_pointers: 'src/webview/cyMount.ts::wireDblTapEdit; src/webview/overlay/htmlOverlayLayer.ts::enterEditModeAtPoint;
+    src/webview/main.ts (onEditCommit wiring, lines ~506-526)
+
+    '
+- uid: INTERACTION.FOCUS
+  name: Camera Focus Rules
+  intent: 'Define when and how the graph canvas recenters automatically so that the
+    user always has context without manual panning.
+
+    '
+  epistemic_state: 'undecided: camera-center on edit-mode entry is specified but not
+    yet implemented'
+  constraints:
+  - 'On first load: cy.fit() to show the full graph with 40 px padding.'
+  - 'On edit-mode entry: camera animates to center the editing node. Duration = /timings/fit_animation_ms.'
+  - 'On edit-mode exit: camera restores to the pan/zoom state that existed before
+    entry.'
+  - 'On lens apply: camera fits the nodes included in the lens.'
+  - 'On structural reload: viewport is restored to the pre-reload snapshot (pan +
+    zoom).'
+  impl_pointers: src/webview/cyMount.ts (cy.fit call); src/webview/state.ts (viewport
+    snapshot)
+- uid: INTERACTION.DRAG
+  name: Drag Gesture Spec
+  intent: Define the drag gesture lifecycle from pointer-down to position-stored so
+    that the interaction, layout, and persistence subsystems share one unambiguous
+    contract.
+  epistemic_state: 'known: drag persistence migrated into the gesture router.
+    Edit-mode suppression now reads state.editingUid (any node editing
+    → all drags suppressed) instead of the prior uiPhase heuristic, removing a class
+    of races where stale uiPhase let drag fire during edit.'
+  constraints:
+  - Drag is only active in view mode. Drag on a node in edit mode is suppressed.
+  - Drag starts on any node (lean or full) in view mode.
+  - 'During drag: children cannot leave the parent compound rect. Clip to parent bounds
+    in the drag handler.'
+  - 'On release: the drag-end event fires. Position is captured from the node''s center
+    coordinates.'
+  - 'On release: if position is outside parent compound rect, snap node back to last
+    valid position.'
+  - Position capture fires PERSISTENCE.AUTOSAVE debounce. If no lens is active, PERSISTENCE.AUTOCREATE
+    runs first.
+  - 'Actual-drag detection: only fire PERSISTENCE.AUTOSAVE on actual drag (grab→free
+    position delta exceeds 1px threshold). Click-without-move must NOT trigger a write
+    to prevent spurious reload loops.'
+  design_notes: 'Implemented via cy.on(''grab'') + cy.on(''free'')
+    in the
+
+    gesture router. Position captured via cy.node.position() (Cytoscape
+
+    center, parent-relative coordinate frame). Actual-drag guard via
+
+    wasActualDrag(startPos, endPos, threshold=1px) — exported from the
+
+    router for testability and to mirror the prior wave''s helper. Edit-mode
+
+    suppression reads state.editingUid; click-without-move (movement < 1px)
+
+    does not trigger AUTOSAVE.
+
+    '
+  impl_pointers: src/webview/interaction/gestureRouter.ts::wireDragGestures (grab
+    + free listeners, snap-back, wasActualDrag guard); src/editor/IntentGraphEditorProvider.ts::autosavePersistPosition
+    (host-side debounce + selfWritePath ordering)
+- uid: INTERACTION.ROUTER
+  name: Gesture Router Dispatch Contract
+  intent: 'Centralize ownership of every cy and document-level pointer/keyboard
+
+    listener in a single module so that gesture dispatch is auditable, testable,
+
+    and free of cross-handler races. The router is the only place the three
+
+    orthogonal state machines (PIG INTERACTION.MODES) transition.
+
+    '
+  epistemic_state: 'known: contract specified early; implementation lands
+    across later development'
+  constraints:
+  - 'Single owner: one GestureRouter instance per panel mount holds every cy.on listener
+    (tap, dbltap, grab, free) and every document-level listener (pointerdown, keydown).
+    No other module may attach Cytoscape pointer listeners or document-level pointer
+    listeners.'
+  - 'Single state object: one GestureState (src/webview/interaction/state.ts) per
+    router. nodeLOD Map, collapseSet Set, editingUid scalar, grabPosition Map. All
+    suppression checks read from this object, never from timing windows or DOM probes.'
+  - Compound transitions originate exclusively from cue clicks or programmatic restoration
+    (applyLens, clearLens, structural reload). The router exposes a CompoundTransitionSource
+    discriminator so callers cannot spoof user clicks.
+  - 'Mode transitions: enter on dbltap-on-node-body; exit on pointerdown outside the
+    editing card OR Escape OR another node entering edit (auto-commits prior). Tab
+    navigation between fields inside the editing card MUST NOT trigger exit (containment
+    check, not blur).'
+  - 'Disposal: router.dispose() detaches every listener it attached. Idempotent. Called
+    from CyHandle.dispose.'
+  design_notes: 'Router replaces wireTapLOD / wireDblTapEdit / wireDragPersist (cyMount.ts)
+
+    and the orphaned document-level click-outside handler (commented in main.ts:20
+
+    but never wired). Earlier attempts tried to fix the cue and edit
+
+    regressions by adding parallel mechanisms; the router collapses them back
+
+    to a single dispatch path so future dispatches cannot fork the contract again.
+
+    '
+  impl_pointers: src/webview/interaction/gestureRouter.ts; src/webview/interaction/state.ts
+- uid: LAYOUT.LOD
+  name: LOD Tier Definitions
+  intent: 'Define what content is visible at each LOD tier so that the rendering layer
+    has an unambiguous contract for what to show and hide.
+
+    '
+  epistemic_state: known
+  constraints:
+  - 'skeleton: uid + name only; rendered identically to lean in current implementation
+    (canvas label only).'
+  - 'lean (default): name label on Cytoscape canvas node. Rect = /dimensions/lean_w
+    x /dimensions/lean_h.'
+  - 'full: HTML overlay card showing name (bold), intent (wrapped), epistemic_state
+    (italic/dimmed), constraints (bulleted). Rect = /dimensions/full_w x /dimensions/full_h.
+
+    '
+  - LOD state is per-node and survives collapse/expand cycles within a session.
+  - Multiple nodes may be full simultaneously.
+  design_notes: 'Initial design specified full at 240x320. Amend 3 set 160x120. Amend
+    4 set 320x360 at user request. User then corrected to 240x180 as the canonical
+    value. The LAYOUT.RECT data_registry reflects the canonical 240x180 target. The
+    Amend 4 code (elkBridge.ts) must be updated from 320x360 to 240x180.
+
+    '
+- uid: LAYOUT.RECT
+  name: Node Rect Derivation
+  intent: Define that node rect dimensions are always derived as a function of LOD
+    and collapse state and are never stored anywhere, so that there is no stale dimension
+    state to reconcile.
+  epistemic_state: known
+  constraints:
+  - Rect = f(lod, collapse-state-of-self, collapse-state-of-descendants). No storage.
+  - 'lean tier default: 160 x 60 px. full tier default: 240 x 180 px.'
+  - 'lean dimensions MUST NOT change: they are ELK layout sentinels used by elkBridge.ts.'
+  - 'full dimensions require coordinated update of: elkBridge.ts constants, cyStyle.ts
+    node[lod=''full''] selectors, and htmlOverlayLayer.ts reference box (referenceW,
+    referenceH).'
+  - Lens stores positions (node centers), not dimensions. Dimensions are re-derived
+    on every render.
+  design_notes: Initial design specified 240x320; Amend 3 set 160x120; Amend 4 set 320x360
+    at user request; user then corrected to 240x180 as canonical. The Amend 4 code
+    (elkBridge.ts) must be updated from 320x360 to 240x180. Dimensions are NOT stored
+    in a data_registry -- they are tier defaults documented here and re-derived by
+    the renderer. Lean dimensions (160x60) are correct and must not change.
+  impl_pointers: 'src/webview/elkBridge.ts::LEAF_WIDTH, LEAF_HEIGHT, FULL_LOD_WIDTH,
+    FULL_LOD_HEIGHT; src/webview/styles/cyStyle.ts (node[lod=''full''] selector);
+    src/webview/overlay/htmlOverlayLayer.ts::createCard (referenceW, referenceH)
+
+    '
+  data_registry:
+    dimensions:
+      lean_w: 160
+      lean_h: 60
+      full_w: 240
+      full_h: 180
+- uid: LAYOUT.OVERLAY
+  name: HTML Overlay Tracking
+  intent: 'Govern how the HTML overlay cards follow node positions on every render
+    frame, including visibility coupling to compound collapse, so that no overlay
+    is ever left floating without an attached visible node.
+
+    '
+  epistemic_state: 'observed | gap: orphan bug (overlay floating after parent collapse)
+    was diagnosed and a fix written (node.visible() guard in tickOne). Status of fix in
+    current build is unverified: user still reports the bug as open.
+
+    '
+  constraints:
+  - Every active overlay MUST be hidden when node.visible() === false.
+  - 'Off-screen culling: hide overlay when renderedBoundingBox height < /thresholds/min_readable_height_px.'
+  - Overlay position is derived from node.renderedBoundingBox() each frame. No cached
+    positions after viewport change.
+  - Overlay visibility is COUPLED to compound collapse state. If a node is not visible
+    on the canvas (parent collapsed), its overlay must not be visible. No exceptions.
+  - Overlays must scale uniformly without distortion, anchored to the top-left of
+    the host node, and remain visible regardless of overflow clipping.
+  - Full-LOD overlay is now also rendered for compound parent nodes, not just leaves;
+    overlay shows the +/- cue for parents at bottom-left.
+  design_notes: 'Transform model: CSS transform scale(s) where s = min(scaleX, scaleY).
+    transform-origin is top-left. Reference box is /dimensions/full_w x /dimensions/full_h.
+    The .ig-full-overlay element requires overflow: visible.'
+  impl_pointers: 'src/webview/overlay/htmlOverlayLayer.ts::tickOne (visibility guard
+    ~line 557); src/webview/overlay/htmlOverlayLayer.ts::tickAll
+
+    '
+  data_registry:
+    thresholds:
+      min_readable_height_px: 50
+- uid: LAYOUT.WRAP
+  name: Wrap Not Truncate
+  intent: 'Ensure that full-LOD overlay text wraps to fit available width rather than
+    being cut off, so the user can read complete field values.
+
+    '
+  epistemic_state: 'known: Amend 4 applied. white-space: normal + overflow-wrap: break-word
+    on all text containers.'
+  constraints:
+  - All text containers in full-LOD overlays (name, intent, constraint) must wrap
+    to fit available width rather than truncate.
+  - Long words that exceed container width must break at character boundaries rather
+    than overflow.
+  - No line-clamping or ellipsis truncation in full-LOD overlays.
+  - The overlay card root and all text containers must not clip overflowing text.
+  design_notes: 'Implementation: white-space: normal + overflow-wrap: break-word on
+    all text containers. overflow: visible on containers and card root. No -webkit-line-clamp
+    or text-overflow: ellipsis. .ig-full-overlay overflow must be visible. (Amend
+    4 applied.)'
+  impl_pointers: src/webview/styles.css (.ig-fn-name, .ig-fn-intent, .ig-fn-constraint)
+- uid: LAYOUT.CUES
+  name: Always-Visible Expand/Collapse Cues
+  intent: 'The user must always have a visible, clickable handle to expand or
+
+    collapse a compound node, regardless of LOD. The handle is the only
+
+    affordance for changing collapse state, so it cannot be hidden by
+
+    selection, drag, hover, or LOD transitions.
+
+    '
+  epistemic_state: 'known: implemented via dedicated CueLayer (src/webview/overlay/cueLayer.ts).
+    One DOM <button> per compound, tracked on cy.on(''render'') for every compound
+    regardless of LOD; visible in lean and full LOD; hidden during edit mode. Click
+    goes through CueLayer → ec.expand|collapse; no other path triggers compound transitions.'
+  constraints:
+  - A single neutral cue (one icon, no separate +/-) is present at bottom-left of
+    every compound node.
+  - The cue is visible in lean LOD and full LOD.
+  - The cue is hidden only while the node is in edit mode.
+  - Cue visibility does not depend on selection, hover, drag state, or focus.
+  - Clicking the cue is the only event that toggles the compound's collapsed/expanded
+    state (see INVARIANTS INV-9).
+  - The cue is rendered by CueLayer, a dedicated DOM layer separate from HtmlOverlayLayer.
+    CueLayer iterates every compound (node.isParent() OR node.hasClass('cy-expand-collapse-collapsed-node'))
+    on init and tracks positions on every render frame.
+  design_notes: "Cue rendering pulled out of HtmlOverlayLayer into\
+    \ its own\nmodule (cueLayer.ts). Two architectural decisions ground this:\n\n\
+    1. Single mechanism. Earlier waves had two cue rendering paths in tension\n  \
+    \ (CSS background-image on cy nodes for lean; DOM div on overlay card for\n  \
+    \ full). The two paths drifted in style, click-event semantics, and\n   lifetime.\
+    \ CueLayer is the only path now: a real DOM <button> with a\n   real click handler,\
+    \ positioned by cy.renderedBoundingBox() on every\n   frame. No stylesheet hacks;\
+    \ no library cue (cueEnabled: false).\n\n2. LOD-independent. The cue exists for\
+    \ every compound node regardless of\n   whether the overlay layer is rendering\
+    \ a full-LOD card for it. This\n   fixes the \"no +/- in sight\" complaint where\
+    \ lean compounds had no cue\n   because the overlay map was the only thing rendering\
+    \ cue buttons.\n\nThe cytoscape-expand-collapse library's cue is disabled (cueEnabled:false)\n\
+    so the only user-driven path is a click on a CueLayer button. CueLayer\nitself\
+    \ calls ec.collapse/ec.expand directly because the action is local\nto cy state;\
+    \ the gesture router does not need to know about it.\n"
+  impl_pointers: src/webview/overlay/cueLayer.ts (NEUTRAL_CUE_SVG, CueLayer class,
+    shouldHideCue + decideCompoundAction pure helpers); src/webview/main.ts (CueLayer
+    construction + initCues + teardown lifecycle); src/webview/cyMount.ts (cueEnabled:false
+    library config); src/webview/styles.css (.ig-compound-cue rule for the button)
+- uid: LAYOUT.ALGORITHM
+  name: Layout Algorithm
+  intent: Define which ELK algorithm governs initial node placement and how pinned
+    (position-stored) nodes interact with it, so that the layout strategy is explicit
+    and its tradeoffs are documented.
+  epistemic_state: 'known | undecided: Phase 2 per-compound algorithm choice not yet
+    decided -- aesthetic regression possible'
+  constraints:
+  - 'MVP: ELK force algorithm globally with force.fixed = true per pinned node.'
+  - Pinned nodes (position stored in active lens) are treated as fixed points; unpinned
+    nodes flow around them.
+  - A node is pinned iff its UID has a position entry in the active lens's nodes dict.
+  - 'Phase 2 (deferred): per-compound algorithm choice -- compounds with no pinned
+    children use layered; compounds with pins switch to force locally.'
+  - 'Freeze-on-first-ELK-run strategy was rejected: positions break when nodes are
+    added.'
+  design_notes: 'MVP uses ELK force globally with force.fixed on pinned nodes. This
+    is ELK''s standard support for user-authored pin constraints. See ELK docs: https://eclipse.dev/elk/reference/algorithms/org-eclipse-elk-force.html.
+    Phase 2 per-compound algorithm was discussed but deferred due to unknown aesthetic
+    regression risk when mixing layered and force within the same compound hierarchy.'
+- uid: LAYOUT.AFFORDANCE
+  name: Compound Parent Visual Distinction
+  intent: 'Visually distinguish compound parent nodes from leaf nodes so the
+
+    user can identify expandable nodes at a glance, without relying
+
+    solely on the cue (LAYOUT.CUES).
+
+    '
+  epistemic_state: 'known: implemented via border-color emphasis on compound parents.'
+  constraints:
+  - Compound parents have a distinct visual treatment so they are recognizable as
+    expandable.
+  - The treatment is subtle, matches host theme variables, and does not introduce
+    loud colors or obtrusive shapes.
+  design_notes: 'Implemented via the cytoscape node:parent
+
+    selector with a slightly emphasized border-color (host focus-border
+
+    theme variable, falling back to #0078d4) and border-width 2px.
+
+    Provides a subordinate cue to LAYOUT.CUES — the cue is the
+
+    action affordance, this is the recognition affordance.
+
+    '
+  impl_pointers: src/webview/styles/cyStyle.ts (node:parent selector, border-color
+    and border-width style properties)
+- uid: EDITING.ENTER
+  name: Edit Mode Entry
+  intent: 'Define what happens on double-click to ensure the node enters edit mode
+    cleanly with camera centered and gesture handlers locked.
+
+    '
+  epistemic_state: 'observed | gap: camera-center on entry not yet implemented; cy
+    gesture lock uses pointer-events: none on overlay + DbltapRef suppression but
+    LOD-toggle tap can still fire on slow double-clicks.
+
+    '
+  constraints:
+  - Double-click on a full-LOD node triggers entry. A lean node must be toggled to
+    full first.
+  - 'On entry: (1) camera centers on node, (2) overlay switches to edit layout (all
+    fields editable), (3) cy gesture handlers for the editing node are locked so that
+    drag and tap events for that node do not fire during edit mode, (4) DbltapRef
+    stamped.'
+  - 'Dbltap suppression window: /timings/dbltap_suppression_ms ms.'
+  - Only one node in edit mode at a time. Entry on node B while A is editing cancels
+    A first.
+  design_notes: 'cy gesture lock is implemented via pointer-events: none on the overlay
+    element plus DbltapRef suppression in cyMount.ts::wireDblTapEdit. LOD-toggle tap
+    can still fire on slow double-clicks (open gap, see epistemic_state).'
+  impl_pointers: 'src/webview/cyMount.ts::wireDblTapEdit; src/webview/overlay/htmlOverlayLayer.ts::enterEditModeAtPoint
+
+    '
+- uid: EDITING.SCOPE
+  name: Whole-Node Edit Form
+  intent: 'Ensure that when a node is in edit mode, all its editable fields are presented
+    as a single unified form so the user edits in one mental context without separate
+    per-field activation gestures.
+
+    '
+  epistemic_state: 'risky: current implementation uses per-field dbltap hit-testing,
+    presenting fields as independent targets. The EditNodeRequestType type is defined
+    but the UI may not yet render all fields simultaneously. User: ''super glitchy
+    atm.''
+
+    '
+  constraints:
+  - Edit mode renders name, intent, and all constraint strings visible and editable
+    simultaneously.
+  - No field requires a separate double-click or gesture to enter its sub-edit state.
+  - Tab key moves focus between fields within the form.
+  - Escape cancels the entire form with no writes.
+  - Enter in a single-line field (name) moves focus to next field, not submit.
+  - Submit occurs on click outside the overlay card boundary (EDITING.EXIT).
+  examples:
+  - 'User double-clicks AUTH.1 (full-LOD). The overlay switches to a form: name field
+    (single-line), intent field (multi-line textarea), constraints[0..n] (single-line
+    each). All simultaneously editable. Clicking outside the card submits all modified
+    fields in one EditNodeRequest.
+
+    '
+- uid: EDITING.EXIT
+  name: Edit Mode Exit Condition
+  intent: 'Define the exact boundary condition for exiting edit mode so the user knows
+    unambiguously what counts as outside the node and accidental exits do not lose
+    work.
+
+    '
+  epistemic_state: 'known: outside-click + Escape exit wired (router
+    owns the document-level pointerdown and keydown listeners). Containment check
+    uses the editing card''s getBoundingClientRect; Tab navigation between fields
+    inside the card does not exit because containment, not blur, is the trigger.'
+  constraints:
+  - 'Exit (commit): pointerdown event anywhere outside the overlay card bounding rect.'
+  - 'Exit (cancel): Escape key. No write occurs; all fields revert to pre-entry values.'
+  - Internal tab-navigation between fields within the card MUST NOT trigger exit.
+  - Blur on a field is NOT a valid exit trigger when focus moves to another field
+    within the same card.
+  - On exit (commit or cancel), cy gesture handlers for that node are restored.
+  impl_pointers: src/webview/interaction/gestureRouter.ts::wireDocumentGestures (document-level
+    pointerdown + keydown listeners); src/webview/overlay/htmlOverlayLayer.ts::commitNodeEdit
+    / cancelNodeEdit (called by router on outside-click / Escape)
+- uid: EDITING.PERSISTENCE
+  name: Edit Write-Back
+  intent: 'Ensure that every committed edit reaches the IG YAML file atomically with
+    conflict detection so that no edit is silently lost.
+
+    '
+  epistemic_state: 'observed | gap: primary hypothesis:
+    silent fileHash mismatch produces ok=false; disk not written but DOM already updated
+    (optimistic update bug). Fix scope: remove optimistic DOM update; make conflict
+    banner non-dismissable; log ok=false to output channel.
+
+    '
+  constraints:
+  - Webview sends a single EditNodeRequest with all modified fields.
+  - Host runs ONE parseDocument + multiple setIn + toString + writeFile cycle. Not
+    one request per field.
+  - DOM fields are NOT updated optimistically. Overlay shows pre-edit values until
+    ok=true is received.
+  - 'On ok=true: update DOM to newValue, store newFileHash, exit edit mode.'
+  - 'On ok=false: revert DOM to pre-edit values; show non-dismissable banner with
+    error text; log to output channel.'
+  - 'Hash mismatch error text: ''File changed externally -- reload first.'' Banner
+    must include Reload button.'
+  - The selfWritePath flag on PanelEntry suppresses the file-watcher reload triggered
+    by the edit write.
+  impl_pointers: 'src/host/yamlEdit.ts (applyFieldEdit, hash check lines 98-103);
+    src/editor/IntentGraphEditorProvider.ts (EditFieldRequestType handler lines 299-335);
+    src/messaging/messageTypes.ts::EditNodeRequestType
+
+    '
+- uid: LENS_UI.SELECTOR
+  name: Control Panel Placement
+  intent: Define the visual placement rules for the lens control panel so that the
+    panel and its controls are always accessible without occluding graph content.
+  epistemic_state: 'undecided: exact element sizing, spacing, and icon set not decided'
+  constraints:
+  - The active-lens dropdown element is the first control in the panel. Its onChange
+    handler triggers lens switching.
+  impl_pointers: 'src/webview/index.html.ts (toolbar strip DOM); src/webview/main.ts
+    (selector onChange handler)
+
+    '
+- uid: LENS_UI.SOURCES
+  name: Lens Data Sources
+  intent: 'Define where lens definitions come from and how they reach the selector
+    so that the selector always reflects the current IG''s available lenses.
+
+    '
+  epistemic_state: 'known: lenses parsed from IG file in loadGraph; LoadGraphResponse
+    carries lenses and default_lens.'
+  constraints:
+  - Lenses are read from the IG file's lenses dict at load time.
+  - meta.default_lens (if present) is auto-applied after BootCompleteNotification.
+  - Both the GUI selector and the command-palette openLens use the same underlying
+    lenses dict.
+  - Selector items are rebuilt on every LoadGraphResponse (file reload may add/remove
+    lenses).
+  impl_pointers: 'src/editor/IntentGraphEditorProvider.ts (lenses parsing, lensConfigToPayload);
+    src/messaging/messageTypes.ts::LoadGraphResponse (lenses, default_lens fields)
+
+    '
+- uid: LENS_UI.DIAGNOSTICS
+  name: Stale-UID Diagnostics Banner
+  intent: 'Notify the user when a lens references UIDs that no longer exist in the
+    current IG without refusing to render, so the user can fix stale lenses at their
+    convenience.
+
+    '
+  epistemic_state: 'known: implemented in Phase 3. Banner at bottom of webview; dismissable;
+    cleared on next lens load.'
+  constraints:
+  - Banner appears at the bottom of the webview panel (does not occlude graph).
+  - 'Banner lists one line per diagnostic: level (warn/error), uid (if known), message.'
+  - 'Never refuse to render: apply lens for all resolvable UIDs; skip stale ones.'
+  - Banner is cleared (hidden) when a new lens is applied without diagnostics.
+  - Diagnostics are computed at translation time (host side, lensConfigToPayload).
+  impl_pointers: 'src/webview/main.ts::showDiagnosticsBanner; src/editor/IntentGraphEditorProvider.ts::lensConfigToPayload
+
+    '
+- uid: LENS_UI.CTRLPANEL
+  name: Control Panel Controls
+  intent: Define the four interactive controls in the lens control panel so that users
+    can switch, create, rename, and delete lenses from a consistent persistent UI
+    element.
+  epistemic_state: 'known: implemented. The dropdown plus three action
+    buttons (+/pencil/trash) live in src/webview/index.html.ts; LensSelector wires
+    the events and routes user picks through SelectLensRequest so the host stays the
+    source of truth for the active lens.'
+  constraints:
+  - 'Control inventory: [dropdown] [+] [pencil] [trash] laid out horizontally. Each
+    control has a dedicated child node specifying its behaviour.'
+- uid: PERSISTENCE.IG_FILE
+  name: IG File Writes
+  intent: 'Define what types of changes are written back to the IG YAML file and how,
+    so that the IG file remains the single source of truth for all persistent graph
+    content.
+
+    '
+  epistemic_state: 'observed | gap: edit-save silent-failure fix pending; see EDITING.PERSISTENCE
+    for UX contract and fix scope.'
+  constraints:
+  - Only field text edits (name, intent, constraints) are written to the IG file.
+  - Write uses parseDocument (eemeli/yaml CST-preserving) + setIn paths + toString
+    + writeFile.
+  - SHA-256 file hash is checked before every write. Mismatch produces ok=false; no
+    write occurs.
+  - ig-tool validate is run before the final write when validateOnWrite setting is
+    true.
+  - File-watcher reload triggered by the write is suppressed via selfWritePath flag.
+  impl_pointers: src/host/yamlEdit.ts; src/host/fileHash.ts
+- uid: PERSISTENCE.POSITIONS
+  name: Node Position Persistence
+  intent: Define that manually-dragged node positions are stored in the active lens
+    entry so that the user's layout work is git-trackable, shareable, and survives
+    reload.
+  epistemic_state: 'known | risky: position stored as Cytoscape node center; visual
+    stability under LOD toggle not yet measured | unvalidated: center-vs-top-left
+    UX tradeoff not yet validated'
+  constraints:
+  - 'Coordinate frame: parent-relative (A2). Each node''s position is (x, y) offset
+    from parent top-left. ROOT position is implicit (0,0); never stored.'
+  - 'Storage: lens entry position field -- {x: N, y: N} -- as Cytoscape node CENTER.
+    Matches cy.node.position() API natively.'
+  - 'On drag-release: position is captured from cy.on(''free'') and written to the
+    active lens via auto-save (PERSISTENCE.AUTO_SAVE).'
+  - Children cannot exit parent compound rect. Drag handler clips during drag; snaps
+    back on release if outside. Layout algorithm is not responsible for enforcement.
+  - 'Children of collapsed parent: positions remain stored in lens, just not rendered.'
+  - 'On structural reload: positions for UIDs still present are restored; positions
+    for removed UIDs are dropped.'
+  design_notes: 'Position MVP stores the Cytoscape node CENTER (not top-left). Reason:
+    matches cy.node.position() API directly with no boundary conversion required.
+    Tradeoff: LOD changes shift the visible rect around the stored center, which can
+    be visually jarring on toggle. Acceptable for MVP. If UX issues emerge, a future
+    iteration can switch to storing top-left by converting: top-left = center - (width/2,
+    height/2). This supersedes the old Option A (workspaceState) vs Option B (data_registry)
+    debate. Decision is locked: positions live in the lens schema (extension of Option
+    B, lens as carrier).'
+  impl_pointers: src/webview/interaction/gestureRouter.ts::wireDragGestures (cy.on('grab')
+    + cy.on('free')); src/host/yamlEdit.ts (yamlEdit invoked downstream of autosavePersistPosition);
+    src/host/autosave.ts (parseAndMutateLensPosition, createDefaultLens)
+- uid: PERSISTENCE.WORKSPACE_STATE
+  name: Ephemeral workspaceState
+  intent: 'Define what lives in VS Code workspaceState so it is clearly separated
+    from the IG file and never treated as a source of truth for graph content.
+
+    '
+  epistemic_state: known
+  constraints:
+  - 'workspaceState key for pan/zoom: ephemeral viewport snapshot (per-panel, per-file).'
+  - workspaceState MUST NOT store lens content, positions, or LOD state. Those live
+    in the lens.
+  - workspaceState is machine-local and not git-tracked.
+  impl_pointers: src/editor/IntentGraphEditorProvider.ts (workspaceState access)
+- uid: PERSISTENCE.LENS_STATE
+  name: Active Lens -- In-Memory
+  intent: 'Define that the currently-applied lens name is in-memory only on PanelEntry
+    and is re-derived from meta.default_lens on every open, so lens state is always
+    derivable from the file.
+
+    '
+  epistemic_state: known
+  constraints:
+  - Active lens name is stored on PanelEntry in-memory only (not workspaceState, not
+    IG file).
+  - 'On panel open: if meta.default_lens is set, it is applied via BootCompleteNotification
+    then ApplyLensNotification.'
+  - 'On file reload: if a lens was active, it is re-applied after the new model loads.'
+  - Lens content (LensConfig) is always re-read from the IG file on apply; never from
+    a stale in-memory copy.
+  impl_pointers: src/editor/IntentGraphEditorProvider.ts::PanelEntry
+- uid: PERSISTENCE.AUTOSAVE
+  name: Debounced Auto-Save
+  intent: Define the write contract for persisting lens state after user interactions
+    so that on-disk lens is always the source of truth with no explicit save step.
+  epistemic_state: 'known: implemented'
+  constraints:
+  - 'Trigger: the drag-end event (position capture) for positions; LOD toggle for
+    lod changes.'
+  - 'Debounce: ~500ms. A second drag within the debounce window replaces the queued
+    write (single-flight).'
+  - 'After debounce fires: lens file is rewritten atomically via host-side yamlEdit.'
+  - 'Self-write suppression: selfWritePath flag MUST be set BEFORE any await on writeFile,
+    not after. Setting after-write causes the watcher to fire before the flag is in
+    place, producing a reload loop.'
+  - 'Visual feedback: transient toast ''Layout saved to lens <name>'' on successful
+    write.'
+  - 'No dirty buffer: the in-memory lens state IS the authoritative state; on-disk
+    is kept in sync.'
+- uid: PERSISTENCE.AUTOCREATE
+  name: Auto-Create Default Lens
+  intent: Define the policy for creating a default lens on first drag when none exists
+    so that position persistence works immediately without requiring the user to create
+    a lens manually.
+  epistemic_state: 'undecided: not yet implemented'
+  constraints:
+  - 'Trigger: first drag-release event when no lens is currently active.'
+  - 'Action: silently create a lens named ''default''; auto-activate it.'
+  - 'Sets meta.default_lens: ''default'' in the IG file.'
+  - 'Visual feedback: toast ''Created lens default''.'
+  - Subsequent drags use the now-active 'default' lens normally via PERSISTENCE.AUTOSAVE.
+- uid: DIAGNOSTICS.LENS_BANNER
+  name: Lens Diagnostics Banner
+  intent: 'Report stale UIDs in applied lenses as a non-blocking banner so the user
+    can see which lens entries are outdated without the viewer refusing to render.
+
+    '
+  epistemic_state: 'known: implemented in Phase 3.'
+  constraints:
+  - Banner at bottom of webview. Dismissable.
+  - Never blocks rendering. Partial lens application with diagnostics is valid.
+  impl_pointers: src/webview/main.ts::showDiagnosticsBanner
+- uid: DIAGNOSTICS.EDIT_CONFLICT
+  name: Edit Conflict Notification
+  intent: 'Surface edit write failures prominently enough that the user cannot miss
+    them, preventing the silent data-loss gap between ''user thinks edit was saved''
+    and ''edit was silently dropped''.
+
+    '
+  epistemic_state: 'risky: current banner is dismissable and easy to miss. User has
+    reported edits not being saved. This is the most critical UX failure in the current
+    extension.
+
+    '
+  constraints:
+  - Edit conflict (ok=false) banner is NON-DISMISSABLE until the user explicitly clicks
+    Reload.
+  - 'Banner includes: error message text, a Reload button that calls loadGraph().'
+  - ok=false is logged to the 'IntentGraph' output channel with nodeUid, field, error
+    text.
+  - 'No optimistic DOM update: the overlay shows pre-edit text until ok=true confirms
+    the write.'
+  impl_pointers: 'src/webview/main.ts (conflict banner DOM); src/editor/IntentGraphEditorProvider.ts
+    (EditFieldRequestType handler)
+
+    '
+- uid: DIAGNOSTICS.LOGGING
+  name: Output Channel Logging
+  intent: 'Route all operational events to the VS Code output channel so developers
+    and power users can diagnose issues without opening DevTools.
+
+    '
+  epistemic_state: 'undecided: output channel exists but coverage of error events
+    is incomplete.'
+  constraints:
+  - 'Log on: every ok=false response, every fileHash mismatch, every ig-tool subprocess
+    error.'
+  - 'Log on: file-watcher events (debounced) at verbose level.'
+  - 'Log on: lens application with diagnostics list.'
+  - 'Channel name: ''IntentGraph''. Created once on extension activation.'
+  impl_pointers: src/editor/IntentGraphEditorProvider.ts
+- uid: LENSSCHEMA.NODESHAPE
+  name: LensNodeEntry Shape
+  intent: Define the new LensConfig.nodes value shape so that both lod and optional
+    position are stored together per node, reflecting that the lens is the sole store
+    for all user-decidable visual state.
+  epistemic_state: 'known: design locked. Coord frame switched 2026-05-01 from parent-relative
+    to absolute after Path Y investigation: parent-relative restoration was unstable
+    due to cytoscape''s compound auto-fit (parent bbox shifts as each child is placed,
+    drifting the anchor for subsequent children).'
+  constraints:
+  - 'Old shape: dict[uid, Literal[''skeleton'',''lean'',''full'']] -- scalar lod string.'
+  - 'New shape: dict[uid, LensNodeEntry] where LensNodeEntry = {lod: lod_str, position?:
+    {x: float, y: float}}.'
+  - position is optional; absent means the node is unpinned (ELK places it freely).
+  - position stores absolute coordinates in cytoscape's global frame (Cytoscape node
+    CENTER). NOT parent-relative.
+  - 'Behavioural intent (the user-facing property): when a parent compound moves between
+    sessions or relayouts, its children move with it. This is realised NOT by parent-relative
+    storage but by cytoscape''s compound auto-fit: when children are placed at their
+    stored absolute positions on apply, the parent''s bounding box auto-fits around
+    them. Dragging a parent moves all children (cytoscape default), and each moved
+    child''s new absolute position is persisted on free; thus ''children follow parent''
+    is preserved end-to-end without a relative coordinate frame.'
+  - 'The user-decidable visual state principle: lenses store what the user has explicitly
+    chosen; product nodes hold no rendering data.'
+  design_notes: 'LensNodeEntry is a Pydantic dataclass in src/src/intentgraph/models/lens_config.py.
+    The old scalar shape has no backward-compatible extension path -- a dict value
+    cannot be both a string and an object. One-off migration is required (see LENSSCHEMA.MIGRATION).
+    Serialization: YAML/JSON round-trip must preserve the new shape. The omission
+    rule (SERIALIZATION_FORMAT.md sec 4) applies: position is omitted when None. RATIONALE
+    FOR ABSOLUTE STORAGE (Path Y, 2026-05-01): we initially specified parent-relative
+    storage to realise the ''children follow parent'' intent. Implementation revealed
+    that cytoscape''s compound auto-fit makes anchored restoration unstable -- placing
+    a child shifts the parent''s bbox, which shifts the anchor for the next child,
+    which compounds the drift. Switching to absolute storage realises the same intent
+    more robustly: cytoscape auto-fits parents around restored children, and dragging
+    a compound moves all its children (each free fires a per-child autosave), so children
+    follow parent both at drag-time and at restore-time. Compounds themselves are
+    not positioned (cytoscape pointer §6.3); their bbox is derived. Existing parent-relative
+    entries on disk become wrong on switch -- one-off lens cleanup required.'
+- uid: LENSSCHEMA.MIGRATION
+  name: Fixture Migration Script
+  intent: Define the one-off migration that rewrites all existing LensConfig fixtures
+    from the old scalar shape to the new LensNodeEntry shape so that existing tests
+    and examples remain valid after the schema change.
+  epistemic_state: 'known: scope defined; script not yet written'
+  constraints:
+  - 'Migration logic: for each uid in nodes, wrap the scalar string in {lod: <scalar>}.'
+  - Script lives at src/scripts/migrate_lens_config_v2.py. Deleted after merge.
+  - 'Targets: src/tests/fixtures/, agents_runtime/tests/fixtures/, vscode_extension/intentgraph-vscode/
+    fixtures.'
+  - No backward-compatibility shim in production code. Migration is one-time.
+- uid: LENSSCHEMA.IGCMDS
+  name: New ig-tool Subcommands
+  intent: Define the new ig-tool CLI subcommands required to set and clear node positions
+    in a lens, so that positions can be managed from the command line and agent scripts.
+  epistemic_state: 'known: design locked; not yet implemented'
+  constraints:
+  - 'New: ig-tool lens set-position -g G --lens N --uid U --x N --y N -- sets or updates
+    a position entry.'
+  - 'New: ig-tool lens clear-position -g G --lens N --uid U -- removes the position
+    entry, reverting to unpinned.'
+  - 'Extension: ig-tool lens add-node gains optional --x N --y N flags to set position
+    on creation.'
+  design_notes: All three subcommands must be documented in TOOL_REGISTRY.md before
+    the feature is considered complete.
+  impl_pointers: agents_runtime/src/ig_agents/cli_lens_commands.py (alongside other internal
+    lens subcommands)
+- uid: LENSSCHEMA.VALIDATION
+  name: Position Validation Rules
+  intent: Define the validation rules for position fields in LensNodeEntry so that
+    malformed position data is caught early without over-constraining the schema.
+  epistemic_state: 'known: rules defined; not yet implemented'
+  constraints:
+  - Position x and y must be numeric (float or int) and finite. NaN and Infinity are
+    rejected.
+  - No parent-rect bounds check at save time. The drag handler enforces bounds during
+    interaction; the lens simply trusts the stored values.
+  - Validation is implemented in src/src/intentgraph/validation.py as part of
+    validate_lenses().
+- uid: LENSSCHEMA.SPECDOC
+  name: Spec Document Update
+  intent: Update LENS_REDESIGN_SPEC.md to reflect the new LensNodeEntry schema, the
+    new ig-tool subcommands, and the position validation rules so the spec remains
+    the authoritative reference for the lens schema.
+  epistemic_state: 'known: scope defined (LensConfig schema change, §4);
+    not yet executed'
+  constraints:
+  - 'Update §4 (LensConfig schema): replace nodes field type with dict[uid, LensNodeEntry].'
+  - Add 'Position semantics' subsection citing parent-relative coordinate frame and
+    center-MVP rule.
+  - 'Update §6 (validation rules): add V-POS1 (position values must be finite numerics)
+    and V-POS2 (position fields must use exact keys ''x'' and ''y'').'
+  - 'Update §8 (subcommand table): add lens set-position and lens clear-position rows;
+    extend lens add-node with optional --x and --y.'
+  impl_pointers: foundation_and_formalism/LENS_REDESIGN_SPEC.md
+- uid: LENSSCHEMA.VISIBILITY
+  name: Lens Visibility Rule
+  intent: The set of nodes present in a lens fully determines what is displayed and
+    how compounds are shown. Compound expand-vs-collapse state is derived from membership
+    of the compound and its children, not stored as an explicit field. The lens is
+    the sole source of truth for visible state; LOD on compounds is meaningless for
+    visibility.
+  epistemic_state: 'known: rule formalised; deriveLensVisibility implementation pending'
+  constraints:
+  - Node UID present in lens.nodes => the node is displayed.
+  - Node UID absent from lens.nodes => the node is not displayed. Renderer realises
+    'not displayed' for compounds by collapsing them in the cytoscape view (cytoscape
+    always has the full tree mounted; collapse is the closest analogue to 'absent').
+  - Compound C in lens AND >=1 of C.children in lens => C is displayed expanded.
+  - Compound C in lens AND no C.child in lens => C is displayed collapsed.
+  - 'The ''lod'' field on a compound entry has no effect on its expand/collapse state.
+    lod is meaningful only for leaves: ''lean'' (default) or ''full'' (overlay shown).'
+  - 'Every gesture that mutates visibility (cue collapse, cue expand) must update
+    lens.nodes membership accordingly: collapse removes all descendants of the target
+    compound; expand adds direct children.'
+  - deriveLensVisibility(lensNodeUids, childrenOf) is the canonical pure function
+    realising this rule. All visibility decisions across applyLens, gesture handlers,
+    and tests consult it.
+  - 'New lens default membership: {ROOT, ROOT.children}. ROOT is in lens with its
+    direct children also in lens => ROOT renders expanded; each L1 compound is in
+    lens but its grandchildren are not => each L1 compound renders collapsed. This
+    gives the user the top-level structure as the starting point, not a fully expanded
+    graph.'
+  - 'Renderer pragmatic (applyLens): the set of compounds to collapse in cytoscape
+    is the UNION of (a) collapsedCompoundUids from deriveLensVisibility AND (b) compound
+    uids absent from the lens. The pure rule describes intent; the renderer compromises
+    ''not displayed'' as ''collapsed'' because cytoscape always mounts the full tree.'
+  design_notes: 'This node was added in response to a Bug 1 investigation: cue clicks
+    (collapse/expand) and tap-LOD-toggle gestures changed the visible cytoscape state
+    but never persisted to disk, so close/reopen reset the visible tree. The fix is
+    twofold: (1) the visibility rule lives here as the canonical statement and is
+    implemented in src/shared/lensVisibility.ts; (2) gesture handlers send visibility-mutating
+    requests to the host (PersistLensVisibilityRequest) which adds/removes lens.nodes
+    entries to keep the on-disk lens in sync with the user''s visible-tree intent.
+    Rationale for not using a ''lod: skeleton'' marker on compounds: LOD on a compound
+    can be overridden by user actions (e.g. promoting a compound to full LOD for inspection)
+    and that override should not be conflated with whether the compound is collapsed.
+    Membership-only encoding makes the rule local, derivable, and impossible to corrupt
+    via LOD changes.'
+- uid: LENS_UI.CTRLPANEL.1
+  name: Active-Lens Dropdown
+  intent: Provide an HTML select element showing all available lenses so the user
+    can switch the active lens with a single interaction without the command palette.
+  epistemic_state: 'known: implemented. Pick goes through SelectLensRequest
+    (Webview → Host) so the host updates entry.activeLensName and broadcasts ApplyLensNotification
+    — survives reload.'
+  constraints:
+  - 'Element: HTML select with one option per lens name plus a ''Default (no lens)''
+    option.'
+  - Active lens name is reflected in the selector value at all times (set programmatically
+    on ApplyLensNotification).
+  - onChange handler sends a message to the host to apply the chosen lens (mirrors
+    openLens command logic).
+  - Selector items are rebuilt on every LoadGraphResponse (file reload may add/remove
+    lenses).
+  - When no lenses are defined, selector shows 'No lenses defined' and is disabled.
+  impl_pointers: src/webview/main.ts (LensSelector.setPickHandler → sendSelectLens);
+    src/editor/IntentGraphEditorProvider.ts (SelectLensRequest handler); src/messaging/messageTypes.ts
+    (SelectLensPayload, SelectLensRequestType)
+- uid: LENS_UI.CTRLPANEL.2
+  name: New Lens Button
+  intent: Allow the user to create a new named lens directly from the GUI panel without
+    switching to the command palette or editing YAML manually.
+  epistemic_state: 'known: implemented. ''+'' button prompts for
+    a name (window.prompt), validates it (alphanumeric + _ -), sends CreateLensRequest.
+    Host runs createLens (lensCrud.ts), the file change triggers a reload, and the
+    new lens auto-activates.'
+  constraints:
+  - 'Control: ''+'' button. On click: prompts user for a lens name (VS Code input
+    box or inline input).'
+  - 'On confirm: sends CreateLensRequest to host; host runs ig-tool lens create and
+    reloads.'
+  - 'New lens is auto-activated after creation. Toast shown: ''Created lens <name>''.'
+  - If the name already exists, show an error (no duplicate lens names).
+  impl_pointers: src/webview/main.ts::App.handleCreateLens; src/host/lensCrud.ts::createLens;
+    src/messaging/messageTypes.ts (CreateLensPayload, CreateLensRequestType)
+- uid: LENS_UI.CTRLPANEL.3
+  name: Rename Active Lens
+  intent: Allow the user to rename the currently-active lens inline so that lens names
+    can be kept meaningful as the design evolves.
+  epistemic_state: 'known: implemented. Pencil button is enabled
+    only when a lens is active. window.prompt seeds the new name with the current
+    one. Host renames the lens key + the lens.name field + meta.default_lens if applicable.'
+  constraints:
+  - 'Control: pencil icon. On click: enters inline rename mode on the dropdown label.'
+  - 'On confirm: sends RenameLensRequest to host; host updates the lens key in the
+    IG file.'
+  - meta.default_lens is updated if the renamed lens was the default.
+  - Active lens name in PanelEntry is updated to the new name.
+  impl_pointers: src/webview/main.ts::App.handleRenameLens; src/host/lensCrud.ts::renameLens;
+    src/messaging/messageTypes.ts (RenameLensPayload, RenameLensRequestType)
+- uid: LENS_UI.CTRLPANEL.4
+  name: Delete Active Lens
+  intent: Allow the user to delete the currently-active lens with a confirmation step
+    so that accidental deletions are prevented and the active state is always valid.
+  epistemic_state: 'known: implemented. Trash button is enabled only
+    when a lens is active. window.confirm gate before delete. Host removes the lens
+    entry, unsets meta.default_lens if needed, and clears active state if the deleted
+    lens was active.'
+  constraints:
+  - 'Control: trash icon. On click: shows a confirmation dialog before deleting.'
+  - 'On confirm: sends DeleteLensRequest to host; host removes the lens from the IG
+    file.'
+  - If the deleted lens was meta.default_lens, unset default_lens in the IG file.
+  - After deletion, if the deleted lens was active, switch to 'no lens active' state.
+  - Dropdown rebuilds to reflect the remaining lenses.
+  impl_pointers: src/webview/main.ts::App.handleDeleteLens; src/host/lensCrud.ts::deleteLens;
+    src/messaging/messageTypes.ts (DeleteLensPayload, DeleteLensRequestType)
+treearcs:
+- parent: ROOT
+  child: AUDIENCE
+- parent: ROOT
+  child: OPERATIONS
+- parent: ROOT
+  child: INTERACTION
+- parent: ROOT
+  child: LAYOUT
+- parent: ROOT
+  child: EDITING
+- parent: ROOT
+  child: LENS_UI
+- parent: ROOT
+  child: PERSISTENCE
+- parent: ROOT
+  child: DIAGNOSTICS
+- parent: ROOT
+  child: NON_GOALS
+- parent: ROOT
+  child: INVARIANTS
+- parent: ROOT
+  child: LENSSCHEMA
+- parent: ROOT
+  child: OBSERVABILITY
+- parent: INTERACTION
+  child: INTERACTION.GESTURES
+- parent: INTERACTION
+  child: INTERACTION.MODES
+- parent: INTERACTION
+  child: INTERACTION.FOCUS
+- parent: INTERACTION
+  child: INTERACTION.DRAG
+- parent: INTERACTION
+  child: INTERACTION.ROUTER
+- parent: LAYOUT
+  child: LAYOUT.LOD
+- parent: LAYOUT
+  child: LAYOUT.RECT
+- parent: LAYOUT
+  child: LAYOUT.OVERLAY
+- parent: LAYOUT
+  child: LAYOUT.WRAP
+- parent: LAYOUT
+  child: LAYOUT.CUES
+- parent: LAYOUT
+  child: LAYOUT.ALGORITHM
+- parent: LAYOUT
+  child: LAYOUT.AFFORDANCE
+- parent: EDITING
+  child: EDITING.ENTER
+- parent: EDITING
+  child: EDITING.SCOPE
+- parent: EDITING
+  child: EDITING.EXIT
+- parent: EDITING
+  child: EDITING.PERSISTENCE
+- parent: LENS_UI
+  child: LENS_UI.SELECTOR
+- parent: LENS_UI
+  child: LENS_UI.SOURCES
+- parent: LENS_UI
+  child: LENS_UI.DIAGNOSTICS
+- parent: LENS_UI
+  child: LENS_UI.CTRLPANEL
+- parent: PERSISTENCE
+  child: PERSISTENCE.IG_FILE
+- parent: PERSISTENCE
+  child: PERSISTENCE.POSITIONS
+- parent: PERSISTENCE
+  child: PERSISTENCE.WORKSPACE_STATE
+- parent: PERSISTENCE
+  child: PERSISTENCE.LENS_STATE
+- parent: PERSISTENCE
+  child: PERSISTENCE.AUTOSAVE
+- parent: PERSISTENCE
+  child: PERSISTENCE.AUTOCREATE
+- parent: DIAGNOSTICS
+  child: DIAGNOSTICS.LENS_BANNER
+- parent: DIAGNOSTICS
+  child: DIAGNOSTICS.EDIT_CONFLICT
+- parent: DIAGNOSTICS
+  child: DIAGNOSTICS.LOGGING
+- parent: LENSSCHEMA
+  child: LENSSCHEMA.NODESHAPE
+- parent: LENSSCHEMA
+  child: LENSSCHEMA.MIGRATION
+- parent: LENSSCHEMA
+  child: LENSSCHEMA.IGCMDS
+- parent: LENSSCHEMA
+  child: LENSSCHEMA.VALIDATION
+- parent: LENSSCHEMA
+  child: LENSSCHEMA.SPECDOC
+- parent: LENSSCHEMA
+  child: LENSSCHEMA.VISIBILITY
+- parent: LENS_UI.CTRLPANEL
+  child: LENS_UI.CTRLPANEL.1
+- parent: LENS_UI.CTRLPANEL
+  child: LENS_UI.CTRLPANEL.2
+- parent: LENS_UI.CTRLPANEL
+  child: LENS_UI.CTRLPANEL.3
+- parent: LENS_UI.CTRLPANEL
+  child: LENS_UI.CTRLPANEL.4
+intentlinks:
+- uid: INTERACTION.MODES_EDITING.ENTER
+  src: INTERACTION.MODES
+  dst: EDITING.ENTER
+  intent: 'View mode is the precondition for edit-mode entry; EDITING.ENTER must verify
+    the node is currently in view mode and full LOD before activating.
+
+    '
+- uid: EDITING.SCOPE_EDITING.PERSISTENCE
+  src: EDITING.SCOPE
+  dst: EDITING.PERSISTENCE
+  intent: 'The whole-node edit form submits all modified fields together in a single
+    EditNodeRequest; EDITING.PERSISTENCE owns the atomic write contract.
+
+    '
+- uid: LAYOUT.OVERLAY_INTERACTION.MODES
+  src: LAYOUT.OVERLAY
+  dst: INTERACTION.MODES
+  intent: 'The overlay visibility must track both viewport geometry (tickOne) and
+    node mode state, since a collapsed-parent node is never visually present regardless
+    of mode.
+
+    '
+- uid: LENS_UI.SELECTOR_LENS_UI.SOURCES
+  src: LENS_UI.SELECTOR
+  dst: LENS_UI.SOURCES
+  intent: 'The selector control is populated from the lenses dict delivered in LoadGraphResponse;
+    LENS_UI.SOURCES defines that data contract.
+
+    '
+- uid: PERSISTENCE.IG_FILE_EDITING.PERSISTENCE
+  src: PERSISTENCE.IG_FILE
+  dst: EDITING.PERSISTENCE
+  intent: 'The IG file write is the materialisation of the edit persistence contract;
+    EDITING.PERSISTENCE specifies what PERSISTENCE.IG_FILE must implement.
+
+    '
+- uid: EDITING.PERSISTENCE_DIAGNOSTICS.EDIT_CONFLICT
+  src: EDITING.PERSISTENCE
+  dst: DIAGNOSTICS.EDIT_CONFLICT
+  intent: 'Every ok=false write response must trigger the edit conflict notification;
+    DIAGNOSTICS.EDIT_CONFLICT owns the UX contract for surfacing those failures.
+
+    '
+- uid: INVARIANTS_LAYOUT
+  src: INVARIANTS
+  dst: LAYOUT
+  intent: INV-4 (no relayout on LOD toggle) and INV-8 (lens is sole store for user-authored
+    visual state) are cross-cutting rules that LAYOUT and all its children must satisfy.
+- uid: INVARIANTS_EDITING
+  src: INVARIANTS
+  dst: EDITING
+  intent: 'INV-6 (no optimistic DOM update) is a cross-cutting rule that EDITING.PERSISTENCE
+    and EDITING.SCOPE must enforce.
+
+    '
+- uid: INTERACTION.DRAG_PERSISTENCE.AUTOSAVE
+  src: INTERACTION.DRAG
+  dst: PERSISTENCE.AUTOSAVE
+  intent: Drag-release event fires the PERSISTENCE.AUTOSAVE debounce; the drag gesture
+    is the upstream trigger for all position writes.
+- uid: PERSISTENCE.POSITIONS_LENSSCHEMA.NODESHAPE
+  src: PERSISTENCE.POSITIONS
+  dst: LENSSCHEMA.NODESHAPE
+  intent: Position storage in the lens depends on the LensNodeEntry shape defined
+    in LENSSCHEMA.NODESHAPE; any change to the schema directly impacts how positions
+    are read and written.
+- uid: LAYOUT.ALGORITHM_PERSISTENCE.POSITIONS
+  src: LAYOUT.ALGORITHM
+  dst: PERSISTENCE.POSITIONS
+  intent: The ELK force algorithm honors pinned nodes by reading their positions from
+    the active lens; LAYOUT.ALGORITHM requires PERSISTENCE.POSITIONS to define where
+    pinned positions come from.
+- uid: LENS_UI.CTRLPANEL.2_PERSISTENCE.AUTOCREATE
+  src: LENS_UI.CTRLPANEL.2
+  dst: PERSISTENCE.AUTOCREATE
+  intent: Both LENS_UI.CTRLPANEL.2 (explicit user creation) and PERSISTENCE.AUTOCREATE
+    (implicit first-drag creation) invoke the same host-side CreateLensRequest path;
+    CTRLPANEL.2 must not duplicate the auto-create logic.
+- uid: INVARIANTS_LENSSCHEMA
+  src: INVARIANTS
+  dst: LENSSCHEMA
+  intent: INV-8 (lens is the only store for user-authored visual state) mandates the
+    schema changes captured in LENSSCHEMA; any weakening of INV-8 would reduce the
+    schema obligations.
+- uid: EDITING.ENTER_INTERACTION.FOCUS
+  src: EDITING.ENTER
+  dst: INTERACTION.FOCUS
+  intent: Edit-mode entry depends on the camera-center rule defined in INTERACTION.FOCUS;
+    the entry sequence must invoke the focus animation rather than implement it independently.
+    Edit-mode exit similarly relies on INTERACTION.FOCUS for the camera-restore rule.
+- uid: INTERACTION.GESTURES_PERSISTENCE.AUTOSAVE
+  src: INTERACTION.GESTURES
+  dst: PERSISTENCE.AUTOSAVE
+  intent: Single-click LOD toggle is the second trigger for the auto-save debounce.
+    AUTOSAVE must be wired to LOD-toggle events as well as drag-release.
+- uid: INVARIANTS_PERSISTENCE
+  src: INVARIANTS
+  dst: PERSISTENCE
+  intent: INV-5 (IG file is canonical) is the foundation of the persistence policy;
+    all persistence decisions must derive from this invariant.
+- uid: INVARIANTS_LAYOUT.OVERLAY
+  src: INVARIANTS
+  dst: LAYOUT.OVERLAY
+  intent: INV-7 (overlay visibility must be coupled to node visibility at all times)
+    directly governs every overlay tracking rule in LAYOUT.OVERLAY.
+- uid: INTERACTION.DRAG_PERSISTENCE.AUTOCREATE
+  src: INTERACTION.DRAG
+  dst: PERSISTENCE.AUTOCREATE
+  intent: Drag-release with no active lens triggers AUTOCREATE before AUTOSAVE; AUTOCREATE
+    is a precondition of the drag-end persistence path.
+- uid: EDITING.EXIT_INTERACTION.FOCUS
+  src: EDITING.EXIT
+  dst: INTERACTION.FOCUS
+  intent: Edit-mode exit must invoke the camera-restore rule defined in INTERACTION.FOCUS;
+    the focus animation is not reimplemented in EDITING.EXIT.
+- uid: LENSSCHEMA.NODESHAPE_LENSSCHEMA.MIGRATION
+  src: LENSSCHEMA.NODESHAPE
+  dst: LENSSCHEMA.MIGRATION
+  intent: Migration depends on the new node shape being fully defined; LENSSCHEMA.NODESHAPE
+    is a precondition of LENSSCHEMA.MIGRATION.
+- uid: LENSSCHEMA.NODESHAPE_LENSSCHEMA.VALIDATION
+  src: LENSSCHEMA.NODESHAPE
+  dst: LENSSCHEMA.VALIDATION
+  intent: Validation rules operate on the new node shape; LENSSCHEMA.NODESHAPE must
+    be defined before LENSSCHEMA.VALIDATION can be implemented.
+- uid: OPERATIONS_INTERACTION
+  src: OPERATIONS
+  dst: INTERACTION
+  intent: The operation vocabulary (single-click, double-click, drag, lens actions)
+    is realised by the interaction model.
+- uid: OPERATIONS_LENS_UI
+  src: OPERATIONS
+  dst: LENS_UI
+  intent: The Manage Lens operation (create/rename/delete) is realised by LENS_UI
+    and its control panel.

@@ -1,0 +1,122 @@
+{
+  "name": "intentgraph-vscode",
+  "displayName": "IntentGraph",
+  "description": "Read-only IntentGraph viewer for VS Code.",
+  "version": "0.0.1",
+  "publisher": "intentgraph",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/intent-graph/intent_graph.git",
+    "directory": "vscode_extension/intentgraph-vscode"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "intentgraph.graphViewer",
+        "displayName": "IntentGraph Viewer",
+        "priority": "default",
+        "selector": [
+          {
+            "filenamePattern": "*.intentgraph.json"
+          },
+          {
+            "filenamePattern": "*.intentgraph.yaml"
+          },
+          {
+            "filenamePattern": "*.ig.json"
+          },
+          {
+            "filenamePattern": "*.ig.yaml"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "intentgraph.fit",
+        "title": "IntentGraph: Recentre View"
+      },
+      {
+        "command": "intentgraph.openLens",
+        "title": "IntentGraph: Open Lens…"
+      },
+      {
+        "command": "intentgraph.clearLens",
+        "title": "IntentGraph: Clear Lens"
+      },
+      {
+        "command": "intentgraph.trace.toggle",
+        "title": "IntentGraph: Toggle Trace"
+      },
+      {
+        "command": "intentgraph.trace.mark",
+        "title": "IntentGraph: Mark Trace"
+      }
+    ],
+    "configuration": {
+      "title": "IntentGraph",
+      "properties": {
+        "intentgraph.igToolPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to ig-tool binary. If empty, falls back to PATH lookup."
+        },
+        "intentgraph.validateOnWrite": {
+          "type": "boolean",
+          "default": false,
+          "description": "Run `ig-tool validate` after every inline edit (~300–800 ms per edit due to Python cold-start). Catches schema violations beyond non-empty checks. Recommended before committing; not for rapid inline workflows."
+        },
+        "intentgraph.trace.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Emit a structured trace of every gesture, reload, and ec call to <workspace>/.intentgraph-traces/. See PIG node OBSERVABILITY."
+        },
+        "intentgraph.trace.path": {
+          "type": "string",
+          "default": "",
+          "description": "Override the trace directory. Empty = workspace default."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "package": "node esbuild.mjs --production",
+    "test": "node --test test/unit/*.test.mjs",
+    "test:integration": "node --test --test-timeout=15000 test/integration/*.test.mjs",
+    "test:playwright": "playwright test --config=test/playwright/playwright.config.ts",
+    "test:playwright:ui": "playwright test --ui --config=test/playwright/playwright.config.ts",
+    "test:all": "npm run test && npm run test:integration"
+  },
+  "dependencies": {
+    "cytoscape": "^3.31.0",
+    "cytoscape-expand-collapse": "4.1.1",
+    "cytoscape-navigator": "2.0.2",
+    "elkjs": "^0.11.0",
+    "vscode-messenger": "^0.6.0",
+    "vscode-messenger-webview": "^0.6.0",
+    "yaml": "^2.8.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/cytoscape": "^3.21.0",
+    "@types/cytoscape-navigator": "^2.0.0",
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.0",
+    "jsdom": "^27.0.1",
+    "typescript": "^5.6.0"
+  }
+}

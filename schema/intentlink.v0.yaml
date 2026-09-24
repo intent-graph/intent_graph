@@ -1,0 +1,29 @@
+kind: intentlink
+version: v0-sketch
+required:
+- uid
+- src
+- dst
+- intent
+optional:
+- shape
+- parent
+fields:
+  uid:
+    type: string
+    description: Stable UID for the link (tool- or author-defined).
+  src:
+    type: string
+    description: Source intentnode uid.
+  dst:
+    type: string
+    description: Target intentnode uid.
+  intent:
+    type: string
+    description: One sentence describing the relationship asserted between src and dst.
+  shape:
+    type: object
+    description: Structured grounding/constraints for the relationship (e.g., interface/schema/protocol).
+  parent:
+    type: string
+    description: UID of the parent link if this is a refined child link.

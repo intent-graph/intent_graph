@@ -1,0 +1,47 @@
+<!--
+  Playwright harness page. Loads the bundled webview JS outside of VS Code,
+  with a mocked acquireVsCodeApi() shim so vscode-messenger-webview can run.
+
+  Differences from prod (src/webview/index.html.ts):
+   - No CSP. Tests need a relaxed page; the harness is never shipped.
+   - No nonce on the script tag.
+   - vscodeShim.js installs window.acquireVsCodeApi BEFORE main.js loads.
+   - DOM skeleton mirrors index.html.ts exactly (same ids, same order).
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/dist/webview/styles.css" />
+  <title>IntentGraph Playwright Harness</title>
+</head>
+<body>
+  <div id="app">Loading IntentGraph...</div>
+  <div id="cy"></div>
+  <div id="ig-overlay-root"></div>
+  <div id="cy-navigator"></div>
+  <div id="banner" hidden></div>
+  <div id="spinner" hidden><div class="ig-spinner"></div></div>
+  <div id="status">(initialising)</div>
+  <div id="lens-selector" class="lens-selector lens-selector--empty" aria-label="Lens selector">
+    <button id="lens-selector-btn" type="button" class="lens-selector__btn" disabled>
+      <span id="lens-selector-label" class="lens-selector__label">No lens</span>
+      <span class="lens-selector__arrow" aria-hidden="true">&#9660;</span>
+    </button>
+    <ul id="lens-selector-list" class="lens-selector__list" hidden role="listbox" aria-label="Available lenses"></ul>
+    <button id="lens-create-btn" type="button" class="lens-selector__action" title="New lens" aria-label="New lens">+</button>
+    <button id="lens-rename-btn" type="button" class="lens-selector__action" title="Rename active lens" aria-label="Rename active lens" disabled>&#9998;</button>
+    <button id="lens-delete-btn" type="button" class="lens-selector__action" title="Delete active lens" aria-label="Delete active lens" disabled>&#128465;</button>
+    <button id="lens-relayout-btn" type="button" class="lens-selector__action" title="Re-run layout" aria-label="Re-run layout">&#10227;</button>
+    <div id="lens-input-row" class="lens-selector__input-row" hidden>
+      <input id="lens-input" class="lens-selector__input" type="text" maxlength="64" spellcheck="false" autocomplete="off" />
+      <button id="lens-input-confirm" type="button" class="lens-selector__action" title="Confirm" aria-label="Confirm">&#10003;</button>
+      <button id="lens-input-cancel" type="button" class="lens-selector__action" title="Cancel" aria-label="Cancel">&#10005;</button>
+    </div>
+    <div id="lens-msg" class="lens-selector__msg" hidden role="status" aria-live="polite"></div>
+  </div>
+  <script src="/test/playwright/harness/vscodeShim.js"></script>
+  <script src="/dist/webview/main.js"></script>
+</body>
+</html>

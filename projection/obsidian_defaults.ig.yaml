@@ -1,0 +1,263 @@
+meta:
+  name: "Obsidian Projection Defaults"
+  description: >
+    Projection intent governing how an IntentGraph is rendered into an Obsidian
+    vault by `ig-tool obsidian export` — layout, node/edge visual encoding,
+    navigation, position persistence, and format compatibility. This is the
+    design-of-record: the export code's layout math and styling constants are a
+    projection OF this graph. Rendering target is "Obsidian vault (Markdown notes
+    + JSON Canvas)", analogous to how python_defaults targets "Python code".
+  kind: projection_ig
+
+nodes:
+  # ── ROOT ──────────────────────────────────────────────────────────────
+  - uid: PIG-OBS.ROOT
+    name: "Obsidian Projection"
+    intent: >
+      Govern every decision about how intent is made legible inside an Obsidian
+      vault, so that a reader can grasp the shape of a graph at a glance and
+      drill into any region without losing their mental map.
+    epistemic_state: "known: layout + persistence dimensions decided; encoding dimensions specified but not yet code-realized (Phase 2); sync deferred"
+    constraints:
+      - The vault is a projection, not the canonical model (P1); the IntentGraph remains source of truth.
+      - Output must open in vanilla Obsidian; enhanced features degrade gracefully when the Advanced Canvas plugin is absent.
+    design_notes: >
+      Two artifacts per export: nodes/*.md (Graph View + wiki-link navigation)
+      and viz/*.canvas (JSON Canvas, explicit geometry). Each L1 child below is a
+      dimension of the rendering choice. Sibling reference: python_defaults
+      (code target) and projection_dimensions (the dimension-ontology shape).
+
+  # ── L1: Layout ─────────────────────────────────────────────────────────
+  - uid: PIG-OBS.LAYOUT
+    name: "Spatial Layout"
+    intent: >
+      Give the whole graph a stable, legible shape the reader can grasp at a
+      glance and drill into, rather than an arrangement that changes on every
+      view or collapses into an unreadable block as branches grow.
+    epistemic_state: "known: three engines implemented (grid/radial/portal); portal is the recommended overview after flat radial read poorly at scale on a real graph"
+    constraints:
+      - Boxes must not overlap.
+      - Layout must scale with degree — a branch with 8 children reads as cleanly as one with 3.
+      - The reader can see the overall shape at a glance and then focus on one region.
+    design_notes: >
+      Three selectable engines (`--layout`). GRID (legacy default) = a 3-column
+      per-node grid, kept for compatibility. RADIAL = one global multi-ring
+      coordinate space (root centre, depth = ring) shared by every canvas, so a
+      node keeps its position everywhere; pure-Python (generalises the existing
+      horizontal tree-layout to angular span), graphviz/twopi rejected to keep
+      the core dependency-free and deterministic. PORTAL (recommended overview)
+      composes a radial hub of L1 *portals* with a vertical tree per branch —
+      see PIG-OBS.NAVIGATION. Flat radial was tried on a real 37-node graph and
+      read poorly (outer-ring crowding, half-disc fan); portal fixes that by
+      using radial only for the ~6 peer branches and a vertical tree inside each.
+
+  - uid: PIG-OBS.LAYOUT.BUDGET
+    name: "Angular Budget"
+    intent: >
+      Allocate each branch a share of the available arc so that dense subtrees
+      get more angular room than sparse ones, keeping the picture balanced
+      regardless of how lopsided the tree is.
+    epistemic_state: "known"
+    constraints:
+      - Each L1 branch is allocated roughly one-eighth to one-sixth of a half-circle (about 22.5–30 degrees).
+      - Around 6–8 L1 branches fill the upper half-circle; beyond that the arc spills toward a full circle.
+      - Within a branch, a subtree's wedge is subdivided among its children in proportion to the number of leaves it contains.
+    design_notes: >
+      Leaf-count-proportional subdivision is the angular analogue of the
+      existing horizontal subtree-span weighting. A single global angular budget
+      avoids both the ugly full-circle-of-two-nodes case and the unreadable
+      degree explosion of the grid.
+
+  - uid: PIG-OBS.LAYOUT.RINGS
+    name: "Ring Spacing"
+    intent: >
+      Choose the radial distance of each depth so inner rings stay compact while
+      outer, more populated rings expand enough that their nodes never crowd.
+    epistemic_state: "known"
+    constraints:
+      - Ring radius grows with depth but must widen further when a ring holds enough nodes that they would otherwise overlap along its circumference.
+    design_notes: >
+      Radius per depth = max(base band spacing, circumference needed to seat
+      that ring's node count along the used arc). A per-depth node histogram
+      drives the expansion, so a deep narrow chain stays a tight spoke while a
+      wide fan-out pushes its ring outward.
+
+  # ── L1: Node encoding ────────────────────────────────────────────────
+  - uid: PIG-OBS.NODE_ENCODING
+    name: "Node Visual Encoding"
+    intent: >
+      Make a node's epistemic status and branch membership readable
+      pre-attentively — before the reader parses any text — so uncertainty and
+      structure are visible in the shape of the picture itself.
+    epistemic_state: "risky: specified as the visual grammar; not yet realized in export code (Phase 2)"
+    constraints:
+      - Epistemic state maps to node shape; epistemic confidence maps to border style; branch identity maps to colour.
+      - Encoding rides on optional Advanced JSON Canvas fields so a vanilla renderer still shows a plain, positioned node.
+    design_notes: >
+      Encoding realizes P3 (incompleteness is first-class) visually: undecided
+      reads as a decision diamond, observed as a database shape, known as a plain
+      rectangle/pill, speculative as a parallelogram; inherited/unvalidated get a
+      dashed border, speculative a dotted one. Branch colour systematizes the
+      existing per-L1 colour map.
+
+  # ── L1: Edge encoding ────────────────────────────────────────────────
+  - uid: PIG-OBS.EDGE_ENCODING
+    name: "Edge Visual Encoding"
+    intent: >
+      Distinguish the kinds of relationship between nodes visually, so a reader
+      can tell a data dependency from a requirement from a conflict without
+      reading each edge label, and so edges route cleanly instead of crossing.
+    epistemic_state: "risky: specified as the visual grammar; not yet realized in export code (Phase 2)"
+    constraints:
+      - Intentlink type maps to arrowhead style; treearc (refinement) edges are rendered distinctly from intentlinks.
+      - Edges auto-route rather than being pinned to fixed sides, to avoid the crossing that a fixed side choice forces under a radial layout.
+    design_notes: >
+      Dataflow reads as a filled triangle, Requires as a circle, Conflicts as a
+      diamond, Refines as an outline triangle. Under radial placement a fixed
+      "bottom→top" side is wrong, so sides are dropped and a pathfinding router
+      (a-star/square) is used instead.
+
+  # ── L1: Navigation ─────────────────────────────────────────────────────
+  - uid: PIG-OBS.NAVIGATION
+    name: "Navigation and Zoom"
+    intent: >
+      Let the reader move between a whole-graph overview and any single branch
+      fluidly — see the shape of everything at once, then drill into one branch
+      to read and edit it — so the same vault serves both the big picture and
+      close work.
+    epistemic_state: "known: portal-overview navigation model decided and implemented; guided walk (start node) is Phase 3"
+    constraints:
+      - The reader zooms out on ONE overview canvas to see the entire graph shape at a glance.
+      - The overview is a read-only map — its embedded branch previews cannot be edited or clicked through; interaction happens after drilling into a branch.
+      - The tree structure is stored authoritatively in edges.yaml (as treearcs), NOT in the display navigation links, so a node's markdown can carry minimal or no nav links without breaking reconstruction on import.
+      - By default node files carry minimal navigation (only an UP link on L1 branch heads); when nav links ARE emitted they always resolve to a canvas the active layout generated, so no link dangles.
+    design_notes: >
+      Three layout engines exist. GRID (legacy) and RADIAL give one global
+      per-node/full-tree coordinate space. PORTAL composes two regimes: an
+      OVERVIEW canvas places the root at the centre and each L1 branch as a
+      radial *portal* (an Advanced-Canvas embedded canvas); each branch is its
+      own canvas laid out as a vertical tree.
+
+      Portal read-only constraint (verified against Advanced Canvas 6.4.0): the
+      plugin tags portal-embedded nodes `data-is-from-portal` and sets
+      `pointer-events: none`, so nodes shown inside a portal cannot be edited and
+      their wiki-links cannot be clicked. This is intentional plugin behaviour
+      with no toggle. Hence the overview is a MAP: the workflow is
+      overview → open the real branch canvas (portal door icon / the node's DOWN
+      link) → read and edit there. Navigation links are retargeted per engine so
+      they never point at a canvas the engine did not generate: in portal mode
+      UP → OVERVIEW (for a branch head) or the branch's L1 canvas (for a deeper
+      node); DOWN → OVERVIEW (root) or the branch's L1 canvas.
+
+      Nav links are display-only, controlled by --nav-links (minimal default /
+      full / none). They were made minimal-by-default because UP/DOWN/CONTAINS on
+      every node ate vertical space for little benefit. This is only safe because
+      the tree is recorded as treearcs in edges.yaml and import rebuilds from
+      there (CONTAINS-scraping kept as a legacy fallback) — so structure survives
+      even with no nav links. Node box height is likewise tunable: --fit-height
+      sizes each node to an estimated content height instead of a fixed tall box
+      — a per-field frontmatter estimate plus the Pillow-measured rendered height
+      of any images the node embeds via its IG-owned data_registry.samples
+      (rendered as a ## Samples section) — which matters more once minimal nav
+      leaves most bodies short and lets image nodes grow to show their samples.
+
+      Collapsed groups mirror the Lens LOD / collapsed_children concept; a
+      designated start node enables an ordered top-down walk of intent for a
+      stakeholder briefing (Phase 3).
+
+  # ── L1: Persistence ──────────────────────────────────────────────────
+  - uid: PIG-OBS.PERSISTENCE
+    name: "Layout Persistence"
+    intent: >
+      Keep the engine's computed layout with the graph itself and honour any box
+      a user moves or resizes by hand — every node's box and each branch portal's
+      position — so the whole OVERVIEW layout is stable across exports and human
+      adjustments are never silently discarded.
+    epistemic_state: "known"
+    constraints:
+      - The full box (x, y, width, height) of every node, plus each L1 branch portal's x/y, is stored in that node's data_registry under an Obsidian-scoped key (obsidian_layout) so it travels with the graph and survives export, edit, merge, reload, and export into a new vault.
+      - Stored layout splits into two roles — computed (the box the exporter last wrote, overwritten every export) and pinned (a human assertion, sticky until explicitly retracted); every field renders as pinned-if-present-else-computed.
+      - A hand-edit is detected by reading back the previously exported canvas and comparing each box against the stored computed baseline (NOT a fresh recompute) beyond a small pixel tolerance; a difference becomes a pin.
+      - Portal positions pin position-only (x/y) — a portal's size is forced by the plugin to its content bounding box, so a human cannot meaningfully resize it.
+      - Pins are retracted by deleting the pinned block from the node's markdown frontmatter and running merge; no dedicated CLI verb is required (it falls out of data_registry round-tripping).
+      - This Obsidian layout store is disjoint from any other projection's layout (e.g. the VSCode extension's per-lens node positions under lenses.*.position); the two never read or write each other's keys.
+    design_notes: >
+      Storage rides data_registry, which round-trips losslessly through the
+      existing diff/merge/import machinery, so the whole feature needs zero
+      merge-code changes and pins clear for free on retraction. The
+      computed/pinned split is load-bearing: diffing an on-disk box against the
+      last-written computed value (rather than a fresh engine recompute) is what
+      makes fit-height's heuristic height drift invisible to detection — a fresh
+      recompute of an untouched node would differ from disk and be mis-frozen as
+      a pin forever. A single engine field scopes each layout block to the frame
+      it was captured in (radial = global coords, portal = branch-local coords),
+      so switching engines drops foreign-frame pins instead of misreading them.
+
+  # ── L1: Compatibility ──────────────────────────────────────────────────
+  - uid: PIG-OBS.COMPAT
+    name: "Format Compatibility"
+    intent: >
+      Ensure the richest rendering when the enhancing plugin is present without
+      ever producing a file that a plain reader cannot open, so no reader is
+      shut out and no vault is locked to one plugin.
+    epistemic_state: "known: styling degrades gracefully; the portal OVERVIEW is the one feature that materially depends on the Advanced Canvas plugin"
+    constraints:
+      - Node/edge visual encoding uses only optional keys of the Advanced JSON Canvas superset; a standard JSON Canvas reader ignores them and still renders positioned nodes and edges.
+      - The grid and radial engines produce fully vanilla-openable vaults; only the portal OVERVIEW depends on the Advanced Canvas plugin to render its embeds (without it, portals show as empty tiles and the map is lost, though the per-branch L1 canvases still open normally).
+    design_notes: >
+      Advanced JSON Canvas (versioned 1.0-1.0) is a strict, optional-only
+      superset of the JSON Canvas spec. Emit the superset; degrade gracefully.
+      The one place "enhanced-by, not broken-without" weakens is the portal
+      overview: a portal node in vanilla Obsidian is an empty embed, so the
+      zoom-out map specifically requires the plugin. This is an accepted,
+      documented trade for the portal engine (grid/radial remain plugin-free).
+
+  # ── L1: Sync (deferred) ──────────────────────────────────────────────
+  - uid: PIG-OBS.SYNC
+    name: "Two-Way Sync"
+    intent: >
+      Let edits a user makes inside Obsidian — moving nodes, and eventually
+      structural changes — flow back into the canonical IntentGraph, so the
+      vault becomes an editing surface and not only a read-only projection.
+    epistemic_state: "deferred: future companion-plugin work; only position pin-back is in near-term scope"
+    constraints:
+      - Structural authoring remains ig-tool's responsibility; the vault surfaces changes, it does not become an alternative graph editor.
+    design_notes: >
+      A later desktop-only Obsidian plugin (side panel) would pick/re-trigger
+      layout and drive `ig-tool obsidian merge`, listening to Advanced Canvas
+      events. Out of scope for the layout/encoding work; recorded here so the
+      intent is not lost.
+
+treearcs:
+  - parent: PIG-OBS.ROOT
+    child: PIG-OBS.LAYOUT
+  - parent: PIG-OBS.ROOT
+    child: PIG-OBS.NODE_ENCODING
+  - parent: PIG-OBS.ROOT
+    child: PIG-OBS.EDGE_ENCODING
+  - parent: PIG-OBS.ROOT
+    child: PIG-OBS.NAVIGATION
+  - parent: PIG-OBS.ROOT
+    child: PIG-OBS.PERSISTENCE
+  - parent: PIG-OBS.ROOT
+    child: PIG-OBS.COMPAT
+  - parent: PIG-OBS.ROOT
+    child: PIG-OBS.SYNC
+  - parent: PIG-OBS.LAYOUT
+    child: PIG-OBS.LAYOUT.BUDGET
+  - parent: PIG-OBS.LAYOUT
+    child: PIG-OBS.LAYOUT.RINGS
+
+intentlinks:
+  - uid: PIG-OBS.LAYOUT_PIG-OBS.PERSISTENCE
+    src: PIG-OBS.LAYOUT
+    dst: PIG-OBS.PERSISTENCE
+    intent: "The layout engine produces the computed box for every node and portal; persistence stores those boxes with the graph, honours any human pin over them, and feeds the last-written boxes back as the baseline the next export diffs against to detect new pins."
+  - uid: PIG-OBS.NODE_ENCODING_PIG-OBS.COMPAT
+    src: PIG-OBS.NODE_ENCODING
+    dst: PIG-OBS.COMPAT
+    intent: "Node encoding depends on the superset-compatibility guarantee to stay safe in vanilla renderers."
+  - uid: PIG-OBS.EDGE_ENCODING_PIG-OBS.COMPAT
+    src: PIG-OBS.EDGE_ENCODING
+    dst: PIG-OBS.COMPAT
+    intent: "Edge encoding depends on the superset-compatibility guarantee to stay safe in vanilla renderers."

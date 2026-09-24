@@ -1,0 +1,75 @@
+{
+    "nodes": [
+        {
+            "id": "group_VALIDATE",
+            "x": -50,
+            "y": -100,
+            "width": 3000,
+            "height": 2220,
+            "type": "group",
+            "label": "Validation"
+        },
+        {
+            "id": "node_VALIDATE_1",
+            "type": "file",
+            "file": "nodes/VALIDATE.1 Existence Checking.md",
+            "x": 300,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_VALIDATE_2",
+            "type": "file",
+            "file": "nodes/VALIDATE.2 Signature Comparison.md",
+            "x": 1200,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_VALIDATE_3",
+            "type": "file",
+            "file": "nodes/VALIDATE.3 Body Comparison.md",
+            "x": 2100,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_VALIDATE_4",
+            "type": "file",
+            "file": "nodes/VALIDATE.4 Severity Classification.md",
+            "x": 300,
+            "y": 1160,
+            "width": 600,
+            "height": 560
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge_VALIDATE_1_VALIDATE_4",
+            "fromNode": "node_VALIDATE_1",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_4",
+            "toSide": "left",
+            "label": "Existence check results (missing source = CRITICAL, missing DB = WARNING) determine initial severity classification."
+        },
+        {
+            "id": "edge_VALIDATE_2_VALIDATE_4",
+            "fromNode": "node_VALIDATE_2",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_4",
+            "toSide": "left",
+            "label": "Signature mismatch results (language difference = CRITICAL) feed severity assignment."
+        },
+        {
+            "id": "edge_VALIDATE_3_VALIDATE_4",
+            "fromNode": "node_VALIDATE_3",
+            "fromSide": "right",
+            "toNode": "node_VALIDATE_4",
+            "toSide": "left",
+            "label": "Body mismatch results (any difference = WARNING with similarity score) feed severity assignment."
+        }
+    ]
+}

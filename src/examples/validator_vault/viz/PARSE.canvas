@@ -1,0 +1,50 @@
+{
+    "nodes": [
+        {
+            "id": "group_PARSE",
+            "x": -50,
+            "y": -100,
+            "width": 3000,
+            "height": 1360,
+            "type": "group",
+            "label": "Parsing"
+        },
+        {
+            "id": "node_PARSE_1",
+            "type": "file",
+            "file": "nodes/PARSE.1 Signature Extraction.md",
+            "x": 300,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_PARSE_2",
+            "type": "file",
+            "file": "nodes/PARSE.2 Body Extraction.md",
+            "x": 1200,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_PARSE_3",
+            "type": "file",
+            "file": "nodes/PARSE.3 Type Normalization.md",
+            "x": 2100,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        }
+    ],
+    "edges": [
+        {
+            "id": "edge_PARSE_3_PARSE_1",
+            "fromNode": "node_PARSE_3",
+            "fromSide": "right",
+            "toNode": "node_PARSE_1",
+            "toSide": "left",
+            "label": "Type normalization is called during signature extraction to normalize parameter and return types."
+        }
+    ]
+}

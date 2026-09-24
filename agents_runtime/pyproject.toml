@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ig-agents"
+version = "0.1.0"
+description = "Agent infrastructure for IntentGraph — session management, logging, context assembly, evaluation."
+requires-python = ">=3.10"
+license = { text = "PolyForm-Shield-1.0.0" }
+dependencies = [
+    "intentgraph",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

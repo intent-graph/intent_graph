@@ -1,0 +1,432 @@
+{
+  "meta": {
+    "name": "SQL Function Sync Validator",
+    "version": "1.0",
+    "description": "Validates that SQL functions stored in PostgreSQL (via generated cache from pg_get_functiondef) match the source code tracked in the git repository. Detects DB drift, missing source, signature mismatches, and body differences."
+  },
+  "nodes": [
+    {
+      "uid": "ROOT",
+      "name": "SQL Function Sync Validator",
+      "intent": "Detect and report discrepancies between SQL functions in the database (represented by generated cache) and their source code definitions in the repository, so that DB drift is caught before it causes production issues.",
+      "epistemic_state": "known",
+      "constraints": [
+        "Source of truth is the database (generated cache via pg_get_functiondef)",
+        "Must scale to repositories with many schemas",
+        "Must gracefully skip unparseable SQL (pglast limitations)",
+        "Output must be both human-readable (markdown) and machine-readable (JSON)"
+      ],
+      "design_notes": "Pipeline architecture: Discovery -> Parsing -> Validation -> Reporting. Chosen over a monolithic approach for testability and clear separation of concerns. Parser uses pglast (the official PostgreSQL parser).",
+      "history": [
+        {
+          "who": "agent:extractor",
+          "date": "2026-02-12",
+          "note": "Created IntentGraph by hand as a demonstration."
+        }
+      ]
+    },
+    {
+      "uid": "DISCOVER",
+      "name": "Discovery",
+      "intent": "Locate all SQL function definitions in both the generated cache (database source of truth) and the source code directories, then map each generated function to its source counterpart.",
+      "epistemic_state": "known — well-tested discovery with fallback grep",
+      "constraints": [
+        "Generated cache dir: build/db_dump/functions/",
+        "Source dirs: sql/functions/ (recursive)",
+        "Exclude dirs: sql/functions/deprecated/",
+        "Filenames in generated cache follow schema.function_name.sql convention"
+      ],
+      "design_notes": "Three-pass strategy: (1) scan generated cache, (2) scan source dirs, (3) fallback grep for unmatched functions. The fallback grep is optional but catches functions stored in unexpected locations."
+    },
+    {
+      "uid": "PARSE",
+      "name": "Parsing",
+      "intent": "Parse SQL function definitions from raw .sql files into structured representations (signature + body), with type normalization to reduce false positives from PostgreSQL's type aliasing.",
+      "epistemic_state": "known — uses pglast (official PG parser); robust but has edge cases",
+      "constraints": [
+        "Must use pglast for reliable parsing (not regex-only)",
+        "pglast may fail on non-standard SQL (non-SQL procedural languages) — must skip gracefully",
+        "Must handle both dollar-quoted and single-quoted function bodies",
+        "Must handle multi-statement SQL files"
+      ],
+      "design_notes": "pglast was chosen over regex-only parsing because CREATE FUNCTION syntax is too complex for reliable regex extraction."
+    },
+    {
+      "uid": "VALIDATE",
+      "name": "Validation",
+      "intent": "Compare parsed function representations from the database (generated) against source code, detecting signature mismatches, body differences, and existence gaps, and classify each discrepancy by severity.",
+      "epistemic_state": "risky — signature comparison disabled; considering re-enabling with fuzzy matching for v2",
+      "constraints": [
+        "Severity levels: CRITICAL (missing source, signature mismatch), WARNING (body diff), INFO (minor)",
+        "Type comparison uses normalized forms (int8 = bigint, etc.)",
+        "Body comparison normalizes whitespace before diffing",
+        "Parameter type validation currently disabled — not reliable due to OID resolution"
+      ],
+      "design_notes": "Signature validation is intentionally limited: only language is checked as a sanity check. Parameter type and return type comparison was disabled because PostgreSQL's internal type canonicalization and OID resolution in pg_get_functiondef makes exact comparison unreliable."
+    },
+    {
+      "uid": "REPORT",
+      "name": "Reporting",
+      "intent": "Generate human-readable and machine-readable reports summarizing validation results, grouped by severity and issue type, with actionable information for each discrepancy.",
+      "epistemic_state": "known — stable output format",
+      "constraints": [
+        "Markdown report: VALIDATION_REPORT.md with severity-grouped tables",
+        "JSON report: validation_data.json with structured data for tooling",
+        "Reports must include pass rate, severity counts, and per-function details",
+        "Reports must be generated within seconds for large repositories"
+      ]
+    },
+    {
+      "uid": "ORCHESTRATE",
+      "name": "Orchestration",
+      "intent": "Coordinate the full pipeline: parse CLI arguments, run discovery, iterate through functions for validation, generate reports, and print a summary with appropriate exit code.",
+      "epistemic_state": "known — simple linear pipeline",
+      "constraints": [
+        "CLI args: --output-dir, --verbose, --skip-fallback-search",
+        "Exit code 0 = all valid, exit code 1 = issues found",
+        "Must print progress indicators during execution"
+      ]
+    },
+    {
+      "uid": "DISCOVER.1",
+      "name": "Generated Cache Scanning",
+      "intent": "Scan the generated cache directory for .sql files, parse filenames to extract schema.function_name, and parse each file's SQL to create FunctionRecord entries with generated_parsed data.",
+      "epistemic_state": "known",
+      "constraints": [
+        "Files named schema.function_name.sql — skip malformed names",
+        "Each file contains one CREATE FUNCTION from pg_get_functiondef()"
+      ]
+    },
+    {
+      "uid": "DISCOVER.2",
+      "name": "Source Directory Scanning",
+      "intent": "Scan all source function directories for .sql files, parse them for CREATE FUNCTION statements (possibly multiple per file), and map each to the corresponding FunctionRecord.",
+      "epistemic_state": "known",
+      "constraints": [
+        "Multiple functions per file are supported",
+        "Excluded directories (sql/functions/deprecated/) are skipped"
+      ]
+    },
+    {
+      "uid": "DISCOVER.3",
+      "name": "Fallback Grep Search",
+      "intent": "For generated functions with no source match after directory scanning, search the entire repository using grep/ripgrep to find function definitions in unexpected locations.",
+      "epistemic_state": "known — optional, can be skipped for speed",
+      "constraints": [
+        "Blacklist approach: exclude only docs/ and deprecated/",
+        "10-second timeout per grep search",
+        "Falls back to ripgrep if grep is not found",
+        "Functions found outside sql/functions/ are flagged"
+      ]
+    },
+    {
+      "uid": "PARSE.1",
+      "name": "Signature Extraction",
+      "intent": "Extract function metadata from pglast AST: schema, name, parameter types, return type, and language.",
+      "epistemic_state": "known",
+      "constraints": [
+        "Uses pglast AST nodes: CreateFunctionStmt, DefElem, TypeName",
+        "Schema defaults to 'public' if not specified",
+        "Language defaults to 'plpgsql' if not specified"
+      ]
+    },
+    {
+      "uid": "PARSE.2",
+      "name": "Body Extraction",
+      "intent": "Extract the function body text from a CREATE FUNCTION statement, handling dollar-quoted ($$ ... $$) and single-quoted bodies.",
+      "epistemic_state": "constrained — uses heuristic regex, not pure AST",
+      "constraints": [
+        "Must handle $tag$...$tag$ dollar quoting",
+        "Must handle '...' single quoting with escaped quotes",
+        "Fallback strips LANGUAGE/IMMUTABLE/etc. clauses via regex"
+      ],
+      "design_notes": "Body extraction is regex-based (not from pglast AST) because pglast normalizes the body text, losing the original formatting. We need the raw body for comparison."
+    },
+    {
+      "uid": "PARSE.3",
+      "name": "Type Normalization",
+      "intent": "Normalize PostgreSQL type aliases to canonical forms so that type comparisons are not confused by synonyms (e.g., bigint = int8).",
+      "epistemic_state": "known — covers 9+ type aliases",
+      "constraints": [
+        "Canonical forms: int8, int4, int2, float8, float4, bool, bpchar, varchar, text",
+        "Also handles: timestamptz, timestamp",
+        "Normalization is case-insensitive and whitespace-normalized"
+      ]
+    },
+    {
+      "uid": "VALIDATE.1",
+      "name": "Existence Checking",
+      "intent": "Detect functions that exist in one location but not the other: in DB but not source (CRITICAL — DB drift), or in source but not DB (WARNING — not deployed).",
+      "epistemic_state": "known"
+    },
+    {
+      "uid": "VALIDATE.2",
+      "name": "Signature Comparison",
+      "intent": "Compare function signatures between generated and source, currently limited to language-only checking due to type aliasing limitations.",
+      "epistemic_state": "constrained — parameter and return type comparison disabled",
+      "constraints": [
+        "Only language is compared (sanity check)",
+        "Type validation disabled: PostgreSQL OID resolution makes comparison unreliable"
+      ]
+    },
+    {
+      "uid": "VALIDATE.3",
+      "name": "Body Comparison",
+      "intent": "Compare function bodies after whitespace normalization, using SequenceMatcher for similarity scoring when bodies differ.",
+      "epistemic_state": "known",
+      "constraints": [
+        "Whitespace normalized: trailing spaces removed, lines stripped",
+        "Uses difflib.SequenceMatcher for similarity ratio",
+        "Any difference = WARNING severity"
+      ]
+    },
+    {
+      "uid": "VALIDATE.4",
+      "name": "Severity Classification",
+      "intent": "Assign severity levels to each discrepancy: CRITICAL for missing source or signature mismatch, WARNING for body differences or unexpected locations, INFO for minor findings.",
+      "epistemic_state": "known"
+    },
+    {
+      "uid": "REPORT.1",
+      "name": "Markdown Report Generation",
+      "intent": "Generate a human-readable markdown report with summary statistics, severity-grouped tables (missing/misplaced, body mismatch, not deployed), and valid function counts.",
+      "epistemic_state": "known",
+      "constraints": [
+        "Output: VALIDATION_REPORT.md",
+        "Sections: Missing/misplaced, No Match, Outside sql/functions/, Body Mismatch, Not Deployed, Valid"
+      ]
+    },
+    {
+      "uid": "REPORT.2",
+      "name": "JSON Report Generation",
+      "intent": "Generate structured JSON data with timestamp, summary statistics, and per-function results including severity, issues, and details.",
+      "epistemic_state": "known",
+      "constraints": [
+        "Output: validation_data.json",
+        "Must include: timestamp, summary (totals, pass_rate, by_severity), results array"
+      ]
+    },
+    {
+      "uid": "ORCHESTRATE.1",
+      "name": "CLI Argument Parsing",
+      "intent": "Parse command-line arguments: --output-dir, --verbose, --skip-fallback-search.",
+      "epistemic_state": "known"
+    },
+    {
+      "uid": "ORCHESTRATE.2",
+      "name": "Pipeline Execution",
+      "intent": "Execute the linear pipeline: discover_all() -> validate each function -> generate_all() reports, with progress output.",
+      "epistemic_state": "known"
+    },
+    {
+      "uid": "ORCHESTRATE.3",
+      "name": "Summary and Exit Code",
+      "intent": "Print validation summary statistics and return exit code (0 = clean, 1 = issues).",
+      "epistemic_state": "known"
+    }
+  ],
+  "treearcs": [
+    {
+      "parent": "ROOT",
+      "child": "DISCOVER"
+    },
+    {
+      "parent": "ROOT",
+      "child": "PARSE"
+    },
+    {
+      "parent": "ROOT",
+      "child": "VALIDATE"
+    },
+    {
+      "parent": "ROOT",
+      "child": "REPORT"
+    },
+    {
+      "parent": "ROOT",
+      "child": "ORCHESTRATE"
+    },
+    {
+      "parent": "DISCOVER",
+      "child": "DISCOVER.1"
+    },
+    {
+      "parent": "DISCOVER",
+      "child": "DISCOVER.2"
+    },
+    {
+      "parent": "DISCOVER",
+      "child": "DISCOVER.3"
+    },
+    {
+      "parent": "PARSE",
+      "child": "PARSE.1"
+    },
+    {
+      "parent": "PARSE",
+      "child": "PARSE.2"
+    },
+    {
+      "parent": "PARSE",
+      "child": "PARSE.3"
+    },
+    {
+      "parent": "VALIDATE",
+      "child": "VALIDATE.1"
+    },
+    {
+      "parent": "VALIDATE",
+      "child": "VALIDATE.2"
+    },
+    {
+      "parent": "VALIDATE",
+      "child": "VALIDATE.3"
+    },
+    {
+      "parent": "VALIDATE",
+      "child": "VALIDATE.4"
+    },
+    {
+      "parent": "REPORT",
+      "child": "REPORT.1"
+    },
+    {
+      "parent": "REPORT",
+      "child": "REPORT.2"
+    },
+    {
+      "parent": "ORCHESTRATE",
+      "child": "ORCHESTRATE.1"
+    },
+    {
+      "parent": "ORCHESTRATE",
+      "child": "ORCHESTRATE.2"
+    },
+    {
+      "parent": "ORCHESTRATE",
+      "child": "ORCHESTRATE.3"
+    }
+  ],
+  "intentlinks": [
+    {
+      "uid": "DISCOVER_VALIDATE",
+      "src": "DISCOVER",
+      "dst": "VALIDATE",
+      "intent": "Discovery provides FunctionRecord dict (schema.name -> generated/source parsed data) consumed by Validation for comparison."
+    },
+    {
+      "uid": "DISCOVER_REPORT",
+      "src": "DISCOVER",
+      "dst": "REPORT",
+      "intent": "Discovery provides FunctionRecord dict to Reporter for source location paths and context in report tables."
+    },
+    {
+      "uid": "PARSE_DISCOVER",
+      "src": "PARSE",
+      "dst": "DISCOVER",
+      "intent": "Discovery depends on the Parser to extract signatures and bodies from .sql files during both generated cache scanning and source directory scanning."
+    },
+    {
+      "uid": "VALIDATE_REPORT",
+      "src": "VALIDATE",
+      "dst": "REPORT",
+      "intent": "Validation produces ValidationReport (list of ValidationResult with severity, issues, details) consumed by Reporter to generate output files."
+    },
+    {
+      "uid": "ORCHESTRATE_DISCOVER",
+      "src": "ORCHESTRATE",
+      "dst": "DISCOVER",
+      "intent": "Orchestrator calls FunctionDiscovery.discover_all() to start the pipeline."
+    },
+    {
+      "uid": "ORCHESTRATE_VALIDATE",
+      "src": "ORCHESTRATE",
+      "dst": "VALIDATE",
+      "intent": "Orchestrator iterates through discovered functions and calls FunctionValidator.validate_function() for each."
+    },
+    {
+      "uid": "ORCHESTRATE_REPORT",
+      "src": "ORCHESTRATE",
+      "dst": "REPORT",
+      "intent": "Orchestrator calls ReportGenerator.generate_all() with results and functions."
+    },
+    {
+      "uid": "PARSE.1_DISCOVER.1",
+      "src": "PARSE.1",
+      "dst": "DISCOVER.1",
+      "intent": "Generated cache scanning uses signature extraction to create ParsedFunction objects.",
+      "parent": "PARSE_DISCOVER"
+    },
+    {
+      "uid": "PARSE.1_DISCOVER.2",
+      "src": "PARSE.1",
+      "dst": "DISCOVER.2",
+      "intent": "Source scanning uses signature extraction to identify functions in multi-statement files.",
+      "parent": "PARSE_DISCOVER"
+    },
+    {
+      "uid": "PARSE.2_DISCOVER.1#body",
+      "src": "PARSE.2",
+      "dst": "DISCOVER.1",
+      "intent": "Generated cache scanning uses body extraction for each function.",
+      "parent": "PARSE_DISCOVER"
+    },
+    {
+      "uid": "PARSE.2_DISCOVER.2#body",
+      "src": "PARSE.2",
+      "dst": "DISCOVER.2",
+      "intent": "Source scanning uses body extraction for each parsed function.",
+      "parent": "PARSE_DISCOVER"
+    },
+    {
+      "uid": "PARSE.3_PARSE.1",
+      "src": "PARSE.3",
+      "dst": "PARSE.1",
+      "intent": "Type normalization is called during signature extraction to normalize parameter and return types."
+    },
+    {
+      "uid": "PARSE.3_VALIDATE.2",
+      "src": "PARSE.3",
+      "dst": "VALIDATE.2",
+      "intent": "Type normalization enables signature comparison by resolving aliases."
+    },
+    {
+      "uid": "PARSE.3_VALIDATE.3",
+      "src": "PARSE.3",
+      "dst": "VALIDATE.3",
+      "intent": "Type normalization is used during body comparison for consistent type names."
+    },
+    {
+      "uid": "VALIDATE.1_VALIDATE.4",
+      "src": "VALIDATE.1",
+      "dst": "VALIDATE.4",
+      "intent": "Existence check results (missing source = CRITICAL, missing DB = WARNING) determine initial severity classification."
+    },
+    {
+      "uid": "VALIDATE.2_VALIDATE.4",
+      "src": "VALIDATE.2",
+      "dst": "VALIDATE.4",
+      "intent": "Signature mismatch results (language difference = CRITICAL) feed severity assignment."
+    },
+    {
+      "uid": "VALIDATE.3_VALIDATE.4",
+      "src": "VALIDATE.3",
+      "dst": "VALIDATE.4",
+      "intent": "Body mismatch results (any difference = WARNING with similarity score) feed severity assignment."
+    },
+    {
+      "uid": "VALIDATE.4_REPORT.1",
+      "src": "VALIDATE.4",
+      "dst": "REPORT.1",
+      "intent": "Severity-classified results drive the grouping and ordering of the markdown report.",
+      "parent": "VALIDATE_REPORT"
+    },
+    {
+      "uid": "VALIDATE.4_REPORT.2",
+      "src": "VALIDATE.4",
+      "dst": "REPORT.2",
+      "intent": "Severity-classified results are serialized into the JSON data structure.",
+      "parent": "VALIDATE_REPORT"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.vsix
+.vscode-test/
+test-results/
+test/traces/
+projection_ig/.backups/

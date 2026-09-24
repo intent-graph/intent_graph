@@ -1,0 +1,30 @@
+kind: intentgraph
+version: v0-sketch
+required:
+- nodes
+- treearcs
+- intentlinks
+optional:
+- lenses
+- meta
+fields:
+  meta:
+    type: object
+    description: Optional graph metadata (name, version, etc.).
+  nodes:
+    type: list[intentnode]
+    description: All nodes.
+  treearcs:
+    type: list[object]
+    description: Refinement tree edges (parent->child).
+    item_fields:
+      parent:
+        type: string
+      child:
+        type: string
+  intentlinks:
+    type: list[intentlink]
+    description: Relations between nodes.
+  lenses:
+    type: map[string, LensConfig]
+    description: Optional named, graph-embedded lens configurations (which nodes at what LOD, plus optional display positions). Keyed by lens name.

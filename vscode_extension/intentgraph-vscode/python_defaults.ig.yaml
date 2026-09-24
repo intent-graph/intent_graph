@@ -1,0 +1,1373 @@
+# Python KB — Guidelines/style graph (second of two).
+# Philosophy graph: python_kb_philosophy.yaml in this directory (intent_graphs/).
+# See: intent_graphs/README.md
+
+meta:
+  name: "Python Projection Defaults"
+  description: >
+    Default rendering decisions for Python code projections, derived from the
+    Python Development Guidelines KB. Each node mirrors a dimension from
+    projection_dimensions.ig.yaml and provides an opinionated default. Override
+    per project as needed. Philosophy (why) is in python_kb_philosophy.yaml.
+  default_lens: test_4
+
+nodes:
+  # ── ROOT ──────────────────────────────────────────────────────────────
+  - uid: PIG-PY.ROOT
+    name: "Python Defaults"
+    intent: >
+      Default rendering decisions for Python code projections. Derived from the
+      Python Development Guidelines knowledge base.
+    epistemic_state: "known"
+    constraints:
+      - "Target Python 3.10+ unless project requires older"
+    design_notes: "Python 3.10+ chosen for pattern matching, improved typing (PEP
+      604 |), and broad ecosystem support; override only when targeting older
+      runtimes."
+    impl_pointers: "../LOD_1_stages/0_index.md"
+
+  # ── L1: Structure ─────────────────────────────────────────────────────
+  - uid: PIG-PY.STRUCT
+    name: "Structure"
+    intent: >
+      Python project structure follows community conventions (PEP 517) with a
+      preference for src-layout. Nesting is fine but only when there is strong
+      reason.
+    epistemic_state: "known"
+    impl_pointers: "../LOD_2_phases/2.2_project_structure.md"
+
+  - uid: PIG-PY.STRUCT.PKG
+    name: "Package layout"
+    intent: >
+      Use src-layout for published packages (src/package_name/). Use flat layout
+      for internal tools and rapid prototypes. Separation of concerns: source,
+      tests, docs, config in distinct top-level dirs.
+    epistemic_state: "known"
+    constraints:
+      - "src-layout is the default for any distributable package"
+      - "Flat layout acceptable for internal tools and scripts"
+      - "One package per repo unless monorepo is justified"
+    impl_pointers: "../LOD_3_domains/2.2.1_directory_layout.md,
+      ../LOD_3_domains/2.2.2_module_organization.md"
+
+  - uid: PIG-PY.STRUCT.MOD
+    name: "Module granularity"
+    intent: >
+      Prefer small, focused modules over large monolithic files. Each module
+      should have a single clear responsibility. Avoid deep nesting — flat is
+      better than nested.
+    epistemic_state: "known"
+    constraints:
+      - "One module = one concern"
+      - "Avoid modules over ~500 LOC — consider splitting"
+      - "Package boundaries reflect architectural boundaries"
+    impl_pointers: "../LOD_3_domains/2.2.2_module_organization.md"
+
+  - uid: PIG-PY.STRUCT.DEP
+    name: "Dependency management"
+    intent: >
+      Declare dependencies in pyproject.toml with version constraints. Use
+      lockfiles for applications. Minimize dependency count.
+    epistemic_state: "known"
+    constraints:
+      - "pyproject.toml is the single source for dependency declarations"
+      - "Pin exact versions for applications (lockfile)"
+      - "Use >= constraints for libraries"
+      - "Separate dev/test dependencies from runtime"
+    impl_pointers: "../LOD_2_phases/2.1_environment.md, ../LOD_2_phases/4.1_packaging.md"
+
+  # ── L1: Implementation ────────────────────────────────────────────────
+  - uid: PIG-PY.IMPL
+    name: "Implementation"
+    intent: >
+      Python implementation follows PEP 8 naming, full type annotations on
+      public APIs, polyglot paradigm choice (OOP for taxonomies, FP for
+      transforms, imperative for control flow), and fail-fast error handling
+      with domain-specific exceptions.
+    epistemic_state: "known"
+    impl_pointers: "../LOD_2_phases/3.1_implementation.md"
+
+  - uid: PIG-PY.IMPL.NAME
+    name: "Naming conventions"
+    intent: >-
+      Follow PEP 8 casing strictly. Invest time in names (the 20-Minute Rule):
+      names must be hierarchical, unambiguous, and intuitive. QWERTY
+    epistemic_state: "known"
+    constraints:
+      - "Modules: snake_case (user_service.py)"
+      - "Classes: PascalCase (UserService)"
+      - "Functions/variables: snake_case (get_user_by_id)"
+      - "Constants: UPPER_SNAKE (MAX_RETRIES)"
+      - "Names scale with scope — longer for wider visibility"
+      - "No abbreviations unless universally understood (e.g., id, url)"
+    impl_pointers: "../LOD_3_domains/3.1.1_naming.md,
+      ../LOD_0_philosophy/0.5_communication_ux.md"
+
+  - uid: PIG-PY.IMPL.TYPE
+    name: "Type annotations"
+    intent: >
+      Type all function signatures (public and complex private). Use strict
+      static checking in CI. Prefer concrete types over Any.
+    epistemic_state: "known"
+    constraints:
+      - "All public function signatures must be typed"
+      - "Complex private functions should be typed"
+      - "Prefer built-in generics (list[str]) over typing module (List[str])"
+      - "Use | union syntax over Optional (Python 3.10+)"
+      - "Type checking enforced in CI (mypy or pyright)"
+    impl_pointers: "../LOD_3_domains/3.1.2_typing.md"
+
+  - uid: PIG-PY.IMPL.PARA
+    name: "Paradigm balance"
+    intent: >
+      Polyglot pragmatism — choose the right paradigm for the problem. OOP for
+      taxonomies and state containers, functional for data transforms and pure
+      logic, imperative for sequential control flow. Prefer dataclasses/Pydantic
+      over manual __init__.
+    epistemic_state: "known"
+    constraints:
+      - "OOP for entities with identity and lifecycle"
+      - "Functional (pure functions) for data transformations"
+      - "dataclasses or Pydantic for structured data — not raw dicts"
+      - "Avoid deep inheritance hierarchies — prefer composition"
+      - "Use decorators judiciously, avoid metaprogramming unless justified"
+    impl_pointers: "../LOD_3_domains/3.1.3_functions.md,
+      ../LOD_3_domains/3.1.5_classes.md,
+      ../LOD_0_philosophy/0.7_polyglot_pragmatism.md"
+
+  - uid: PIG-PY.IMPL.ERR
+    name: "Error handling"
+    intent: >
+      Fail fast with specific, domain-level exceptions. Error messages must help
+      debugging. Never swallow exceptions silently.
+    epistemic_state: "known"
+    constraints:
+      - "Custom exception classes for domain errors"
+      - "Exceptions carry context (the failing value, not just a message)"
+      - "Raise over return-None for expected failure paths"
+      - "Never bare except — always catch specific types"
+      - "Log at the boundary, raise through the interior"
+    impl_pointers: "../LOD_3_domains/3.1.7_error_handling.md,
+      ../LOD_0_philosophy/0.8_defensive_design.md"
+
+  - uid: PIG-PY.IMPL.API
+    name: "API surface design"
+    intent: >
+      Explicit public/private boundary. Public API is the contract — typed,
+      documented, and stable. Private internals prefixed with _.
+    epistemic_state: "known"
+    constraints:
+      - "Public API exported via __all__ in __init__.py"
+      - "Private helpers prefixed with _ (single underscore)"
+      - "Keyword-only args after * for functions with >2 parameters"
+      - "Return concrete types, not implementation details"
+      - "Validate at system boundaries, trust internal code"
+    impl_pointers: "../LOD_3_domains/3.1.3_functions.md, ../LOD_3_domains/3.1.5_classes.md"
+
+  - uid: PIG-PY.IMPL.IMP
+    name: "Import style"
+    intent: >
+      Absolute imports by default. Group imports: stdlib, third-party, local.
+      Let the linter (ruff/isort) enforce ordering.
+    epistemic_state: "known"
+    constraints:
+      - "Absolute imports preferred over relative"
+      - "No star imports (from x import *) except __init__.py re-exports"
+      - "Import grouping: stdlib → third-party → local (blank line between)"
+      - "isort via ruff enforces ordering automatically"
+    impl_pointers: "../LOD_2_phases/3.1_implementation.md (imports),
+      ../LOD_4_practices/4.2.1.1_ruff_config.md"
+
+  # ── L1: Testing ───────────────────────────────────────────────────────
+  - uid: PIG-PY.TEST
+    name: "Testing"
+    intent: >
+      pytest is the framework. Testing pyramid: many unit, some integration, few
+      E2E. Tests are code — same quality standards.
+    epistemic_state: "known"
+    impl_pointers: "../LOD_2_phases/3.2_testing.md"
+
+  - uid: PIG-PY.TEST.STRAT
+    name: "Test strategy"
+    intent: >
+      Follow the testing pyramid. Test behavior, not implementation — tests
+      should survive refactoring. Reproduce bugs with a failing test before
+      fixing.
+    epistemic_state: "known"
+    constraints:
+      - "pytest as the test framework (not unittest)"
+      - "Unit tests: fast (<100ms each), no external dependencies"
+      - "Integration tests: real dependencies, marked with pytest markers"
+      - "Test behavior at public API level, not private internals"
+      - "Minimum coverage target negotiated per project"
+    impl_pointers: "../LOD_3_domains/3.2.1_unit_testing.md,
+      ../LOD_3_domains/3.2.2_integration_testing.md"
+
+  - uid: PIG-PY.TEST.LAY
+    name: "Test layout and naming"
+    intent: >
+      Separate tests/ directory mirroring source structure. Test files named
+      test_<module>.py. Test functions named test_<behavior>.
+    epistemic_state: "known"
+    constraints:
+      - "tests/ directory at project root, separate from src/"
+      - "Mirror source structure: tests/test_<module>.py"
+      - "Test names describe behavior: test_user_creation_validates_email"
+      - "conftest.py for shared fixtures at appropriate directory level"
+    impl_pointers: "../LOD_3_domains/3.2_testing.md, ../LOD_4_practices/3.2.3.1.1_conftest.md"
+
+  - uid: PIG-PY.TEST.FIX
+    name: "Fixture and mock style"
+    intent: >
+      Use pytest fixtures for test data setup. Factory functions over complex
+      fixtures. Mock external services, not internal code.
+    epistemic_state: "known"
+    constraints:
+      - "pytest fixtures for reusable setup/teardown"
+      - "Factory functions (or factory_boy) for complex test objects"
+      - "Mock external services (APIs, databases, filesystem)"
+      - "Avoid mocking internal code — if you need to mock it, the design may be
+        wrong"
+      - "Use tmp_path fixture for filesystem tests"
+    impl_pointers: "../LOD_4_practices/3.2.1.2.1_mock_examples.md,
+      ../LOD_4_practices/3.2.1.2.2_patch_targets.md"
+
+  # ── L1: Documentation ─────────────────────────────────────────────────
+  - uid: PIG-PY.DOC
+    name: "Documentation"
+    intent: >
+      Documentation is UX. Google-style docstrings on all public APIs. Inline
+      comments explain why, not what. Keep docs close to code.
+    epistemic_state: "known"
+    impl_pointers: "../LOD_2_phases/3.3_documentation.md"
+
+  - uid: PIG-PY.DOC.STR
+    name: "Docstring style"
+    intent: >
+      Google style docstrings. Mandatory on all public functions, classes, and
+      modules with non-obvious purpose. First line is imperative-mood summary.
+    epistemic_state: "known"
+    constraints:
+      - "Google style (Args, Returns, Raises, Example sections)"
+      - "First line: imperative mood, one sentence"
+      - "All public functions and classes must have docstrings"
+      - "Complex private functions should have docstrings"
+      - "Include Examples section when usage is non-obvious"
+    impl_pointers: "../LOD_3_domains/3.3.1_doc_levels.md,
+      ../LOD_4_practices/3.3.3.1_google_style.md"
+
+  - uid: PIG-PY.DOC.INL
+    name: "Inline documentation"
+    intent: >
+      Comments explain why, not what. Code should be self-documenting via naming
+      and structure. Use TODO/FIXME markers with context.
+    epistemic_state: "known"
+    constraints:
+      - "Comments explain WHY, never WHAT (the code says what)"
+      - "No commented-out code — version control tracks history"
+      - "TODO/FIXME markers include author and context"
+      - "Strategy comments before complex algorithms are encouraged"
+    impl_pointers: "../LOD_3_domains/3.3_documentation.md"
+
+  # ── L1: Tooling ───────────────────────────────────────────────────────
+  - uid: PIG-PY.TOOL
+    name: "Tooling and quality"
+    intent: >
+      Automate the mundane. Ruff for linting + import sorting, Black (or ruff
+      format) for formatting, mypy/pyright for type checking. All enforced in CI
+      and pre-commit.
+    epistemic_state: "known"
+    impl_pointers: "../LOD_2_phases/4.2_quality.md"
+
+  - uid: PIG-PY.TOOL.LINT
+    name: "Linting and formatting TEST123"
+    intent: >
+      Ruff as the single linter (replaces flake8, isort, pyupgrade). Black or
+      ruff-format for formatting. Line length 88. Enforced via pre-commit hooks
+      and CI.
+    epistemic_state: "known"
+    constraints:
+      - "Ruff with rule sets: E, W, F, I, B, UP, SIM"
+      - "Line length 88 (Black default)"
+      - "Auto-format on save or pre-commit — no manual formatting debates"
+      - "Pre-commit hooks for lint + format + type check"
+    design_notes: "Single-tool choice (Ruff) reduces config drift and CI time; Black
+      compatibility via ruff format."
+    impl_pointers: "../LOD_4_practices/4.2.1.1_ruff_config.md,
+      ../LOD_4_practices/4.2.2.1_black_config.md"
+
+  - uid: PIG-PY.TOOL.PKG
+    name: "Packaging conventions"
+    intent: >
+      pyproject.toml as the single project metadata and build config file. PEP
+      517/518 compliant build system.
+    epistemic_state: "known"
+    constraints:
+      - "pyproject.toml only — no setup.py, no setup.cfg"
+      - "Build backend: hatchling, flit, or setuptools (project choice)"
+      - "Version in pyproject.toml or dynamic via __version__"
+      - "Entry points declared in pyproject.toml [project.scripts]"
+    impl_pointers: "../LOD_2_phases/4.1_packaging.md,
+      ../LOD_4_practices/4.2.3.1_pyproject_sections.md"
+
+  # ── L1: Performance style ─────────────────────────────────────────────
+  - uid: PIG-PY.PERF
+    name: "Performance style"
+    intent: >
+      Write clear code first, optimize with data. Performance concerns shape
+      code structure only when measured bottlenecks demand it.
+    epistemic_state: "known"
+    impl_pointers: "../LOD_2_phases/5.1_performance.md"
+
+  - uid: PIG-PY.PERF.CONC
+    name: "Concurrency and async patterns"
+    intent: >
+      Use async/await for I/O-bound concurrency. Use multiprocessing for
+      CPU-bound parallelism. Avoid threads unless interfacing with blocking
+      libraries.
+    epistemic_state: "known"
+    constraints:
+      - "asyncio for I/O-bound concurrency (network, file system)"
+      - "multiprocessing for CPU-bound parallelism"
+      - "threading only when wrapping blocking third-party code"
+      - "Prefer concurrent.futures for simple parallelism"
+      - "No premature async — sync is simpler when concurrency isn't needed"
+    impl_pointers: "../LOD_4_practices/5.1.6.1_asyncio_basics.md,
+      ../LOD_4_practices/5.1.5.1_multiprocessing.md,
+      ../LOD_4_practices/5.1.4.1_threading.md"
+
+  # ── L3: Expansion from Python KB (one layer under each L2 leaf) ─────────
+  - uid: PIG-PY.STRUCT.PKG.1
+    name: "Src vs flat layout"
+    intent: >
+      Prefer src-layout for distributable packages (prevents importing
+      uninstalled code; tests use installed package). Use flat layout for
+      internal tools and rapid prototypes. Decision driven by distribution
+      target (PyPI vs container/deploy).
+    epistemic_state: "known"
+    constraints:
+      - "src-layout default for any distributable package"
+      - "Flat layout acceptable for internal applications and scripts only"
+  - uid: PIG-PY.STRUCT.PKG.2
+    name: "Monorepo vs single package"
+    intent: >
+      Use a single package per repo unless multiple related packages share
+      dependencies and tooling; then use monorepo with workspace config (e.g.
+      uv/hatch workspace). One package per repo is the default.
+    epistemic_state: "known"
+    constraints:
+      - "One package per repo unless monorepo is justified"
+      - "Monorepo: shared deps, unified CI, workspace members in root pyproject"
+  - uid: PIG-PY.STRUCT.PKG.3
+    name: "Top-level dirs and supporting files"
+    intent: >
+      Separate source, tests, docs, and config in distinct top-level
+      directories. Require pyproject.toml, README.md, .gitignore; recommend
+      docs/, scripts/, LICENSE, CHANGELOG, CONTRIBUTING, pre-commit.
+    epistemic_state: "known"
+    constraints:
+      - "tests/, docs/, scripts/ at top level; no source in root"
+      - "pyproject.toml is single source for metadata and tool config"
+  - uid: PIG-PY.STRUCT.MOD.1
+    name: "Single concern and size"
+    intent: >
+      Each module should have a single clear responsibility. Prefer small,
+      focused modules; avoid files over ~500 LOC and deep nesting. Package
+      boundaries should reflect architectural boundaries.
+    epistemic_state: "known"
+    constraints:
+      - "One module = one concern"
+      - "Avoid modules over ~500 LOC — consider splitting"
+      - "Flat is better than nested"
+  - uid: PIG-PY.STRUCT.MOD.2
+    name: "__init__.py and public API"
+    intent: >
+      Use __init__.py to define package exports (__all__) and optional lazy
+      loading for large packages. Avoid star imports and heavy work at import
+      time in __init__.py.
+    epistemic_state: "known"
+    constraints:
+      - "Explicit __all__ for public API; minimal or lazy __init__ for large
+        packages"
+      - "No star imports or I/O at import time in __init__.py"
+  - uid: PIG-PY.STRUCT.MOD.3
+    name: "Circular import prevention"
+    intent: >
+      Avoid circular imports by keeping modules focused, using TYPE_CHECKING
+      blocks or function-level imports when needed, and extracting shared types
+      to a dedicated module. Prefer dependency injection over tight import
+      coupling.
+    epistemic_state: "known"
+    constraints:
+      - "Extract shared types to separate module when A and B depend on each
+        other"
+      - "Use TYPE_CHECKING and string annotations or import at function level as
+        fallback"
+  - uid: PIG-PY.STRUCT.DEP.1
+    name: "Declaration in pyproject.toml"
+    intent: >
+      Declare all dependencies in pyproject.toml [project] and
+      [project.optional-dependencies]. Use version constraints (>= for
+      libraries); pyproject.toml is the single source of truth — no setup.py or
+      requirements.txt for declaration.
+    epistemic_state: "known"
+    constraints:
+      - "pyproject.toml is the single source for dependency declarations"
+      - "Use >= constraints for libraries; pin exact for applications via
+        lockfile"
+  - uid: PIG-PY.STRUCT.DEP.2
+    name: "Lockfiles for applications"
+    intent: >
+      For applications, use a lockfile (uv.lock, poetry.lock, requirements.lock)
+      to pin exact versions and ensure reproducible installs. Generate from
+      pyproject.toml and commit the lockfile.
+    epistemic_state: "known"
+    constraints:
+      - "Pin exact versions for applications (lockfile)"
+      - "Commit lockfile; use it for install in CI and production"
+  - uid: PIG-PY.STRUCT.DEP.3
+    name: "Dev and runtime separation"
+    intent: >
+      Separate runtime dependencies from development/test dependencies. Put dev
+      and test tools (pytest, ruff, mypy) in [project.optional-dependencies]
+      (e.g. dev) so production installs stay minimal.
+    epistemic_state: "known"
+    constraints:
+      - "Separate dev/test dependencies from runtime"
+      - "Install with optional group for dev: pip install -e '.[dev]' or uv sync
+        --group dev"
+  - uid: PIG-PY.IMPL.NAME.1
+    name: "PEP 8 conventions by element"
+    intent: >
+      Follow PEP 8 strictly: modules and packages snake_case; classes and
+      exceptions PascalCase (exceptions suffix Error); functions, methods,
+      variables snake_case; constants UPPER_SNAKE. Use _prefix for internal,
+      trailing _ to avoid keyword clash.
+    epistemic_state: "known"
+    constraints:
+      - "Modules: snake_case (user_service.py); Classes: PascalCase
+        (UserService)"
+      - "Functions/variables: snake_case; Constants: UPPER_SNAKE"
+      - "Private: single leading underscore; no __mangling unless required"
+  - uid: PIG-PY.IMPL.NAME.2
+    name: "Naming hierarchy and scope"
+    intent: >-
+      Names should scale with scope: short for loop locals (i, x), medium for
+      functions and classes, longer for wider visibility. Invest time in names
+      (20-Minute Rule); names must be unambiguous, pronounceable, searchable,
+      and consistent. QWERTY
+    epistemic_state: "known"
+    constraints:
+      - "Names scale with scope — longer for wider visibility"
+      - "Avoid generic names (utils, helpers, misc); use plural for collections
+        (models, exceptions)"
+  - uid: PIG-PY.IMPL.NAME.3
+    name: "Domain vocabulary and anti-patterns"
+    intent: >
+      Use domain vocabulary so names reveal intent. Class names: noun or noun
+      phrase, suffix with role (Repository, Service, Handler). No abbreviations
+      unless universally understood (id, url). Avoid naming anti-patterns
+      (single-letter except in narrow scope, noise words).
+    epistemic_state: "known"
+    constraints:
+      - "No abbreviations unless universally understood (e.g., id, url)"
+      - "Class names describe what it is; suffix with role (UserRepository,
+        ConfigService)"
+  - uid: PIG-PY.IMPL.TYPE.1
+    name: "Where to add type hints"
+    intent: >
+      Type all function signatures (public and complex private). Type public
+      APIs comprehensively; let inference handle local variables. Use type
+      checking in CI (mypy or pyright). Use Any sparingly and intentionally.
+    epistemic_state: "known"
+    constraints:
+      - "All public function signatures must be typed"
+      - "Complex private functions should be typed"
+      - "Type checking enforced in CI (mypy or pyright)"
+  - uid: PIG-PY.IMPL.TYPE.2
+    name: "Type syntax and built-in generics"
+    intent: >
+      Prefer built-in generics (list[str], dict[str, int]) over typing.List. Use
+      | for union (X | None) over Optional on Python 3.10+. Annotate returns and
+      parameters with concrete types, not implementation details.
+    epistemic_state: "known"
+    constraints:
+      - "Prefer built-in generics (list[str]) over typing module (List[str])"
+      - "Use | union syntax over Optional (Python 3.10+)"
+  - uid: PIG-PY.IMPL.TYPE.3
+    name: "Protocols and gradual typing TEST"
+    intent: >
+      Use Protocol for structural subtyping when you need duck-typed interfaces.
+      Apply gradual typing: start with public API and critical paths; expand
+      coverage over time. Prefer concrete types over Any.
+    epistemic_state: "known"
+    constraints:
+      - "Prefer concrete types over Any"
+      - "Use Protocol for structural subtyping when interface is defined by
+        usage"
+  - uid: PIG-PY.IMPL.PARA.1
+    name: "When to use functions vs classes vs modules"
+    intent: >
+      Use functions for single operations and data transforms; use classes when
+      data has invariants, multiple operations on same data, or encapsulation.
+      Use a module (not a class) for grouping functions with no shared state.
+      Prefer dataclasses/Pydantic over manual __init__ for data holders.
+    epistemic_state: "known"
+    constraints:
+      - "OOP for entities with identity and lifecycle"
+      - "Functional (pure functions) for data transformations"
+      - "Module with functions over class with only static methods"
+  - uid: PIG-PY.IMPL.PARA.2
+    name: "Dataclasses and structured data"
+    intent: >
+      Use dataclasses or Pydantic for structured data — not raw dicts. Use
+      frozen dataclasses when immutability is required. Avoid deep inheritance
+      for data models; prefer composition and flat hierarchies.
+    epistemic_state: "known"
+    constraints:
+      - "dataclasses or Pydantic for structured data — not raw dicts"
+      - "Avoid deep inheritance hierarchies — prefer composition"
+  - uid: PIG-PY.IMPL.PARA.3
+    name: "Function design and decorators"
+    intent: >
+      Functions: single responsibility, explicit inputs, clear outputs, 5–15
+      lines ideal. Use decorators judiciously; avoid metaprogramming unless
+      justified. Prefer keyword-only args after * for functions with more than
+      two parameters.
+    epistemic_state: "known"
+    constraints:
+      - "Use decorators judiciously, avoid metaprogramming unless justified"
+      - "Keyword-only args after * for functions with >2 parameters"
+  - uid: PIG-PY.IMPL.ERR.1
+    name: "Fail fast and exception vs return"
+    intent: >
+      Fail fast: detect errors early and raise. Use exceptions for unexpected
+      failure paths; use return values (e.g. None) for expected absence (e.g.
+      find_user). Raise over return-None for real failure so callers must
+      handle.
+    epistemic_state: "known"
+    constraints:
+      - "Raise over return-None for expected failure paths"
+      - "Distinguish: get_user (raise if missing) vs find_user (return None)"
+  - uid: PIG-PY.IMPL.ERR.2
+    name: "try/except discipline"
+    intent: >-
+      Catch specific exception types only; never bare except. Use else/finally
+      when useful. Log at the boundary, raise through the interior. Never
+      swallow exceptions silently. QWERTY
+    epistemic_state: "known"
+    constraints:
+      - "Never bare except — always catch specific types"
+      - "Log at the boundary, raise through the interior"
+  - uid: PIG-PY.IMPL.ERR.3
+    name: "Custom exceptions and error messages"
+    intent: >
+      Define custom exception classes for domain errors; exceptions should carry
+      context (e.g. the failing value, field, reason). Error messages should
+      state what happened, why it's a problem, and how to fix when known.
+    epistemic_state: "known"
+    constraints:
+      - "Custom exception classes for domain errors"
+      - "Exceptions carry context (the failing value, not just a message)"
+  - uid: PIG-PY.IMPL.API.1
+    name: "Public API and __all__"
+    intent: >
+      Public API is the contract: typed, documented, and stable. Export it
+      explicitly via __all__ in __init__.py. Return concrete types from public
+      functions, not implementation details.
+    epistemic_state: "known"
+    constraints:
+      - "Public API exported via __all__ in __init__.py"
+      - "Return concrete types, not implementation details"
+  - uid: PIG-PY.IMPL.API.2
+    name: "Private boundary and _prefix"
+    intent: >
+      Private internals are prefixed with a single underscore. Callers should
+      not rely on private names; they may change without notice. Validate at
+      system boundaries; trust internal code.
+    epistemic_state: "known"
+    constraints:
+      - "Private helpers prefixed with _ (single underscore)"
+      - "Validate at system boundaries, trust internal code"
+  - uid: PIG-PY.IMPL.API.3
+    name: "Function signatures and parameters"
+    intent: >
+      Order parameters: required positional, optional positional, *,
+      keyword-only, **kwargs. Use keyword-only after * for functions with more
+      than two parameters to avoid misuse and improve readability.
+    epistemic_state: "known"
+    constraints:
+      - "Keyword-only args after * for functions with >2 parameters"
+  - uid: PIG-PY.IMPL.IMP.1
+    name: "Absolute imports and no star TEST"
+    intent: >-
+      Use absolute imports by default. Avoid star imports (from x import *)
+      except in __init__.py for re-exporting public API. Relative imports only
+      when appropriate within a package. TEST TEST
+    epistemic_state: "known"
+    constraints:
+      - "Absolute imports preferred over relative"
+      - "No star imports (from x import *) except __init__.py re-exports"
+  - uid: PIG-PY.IMPL.IMP.2
+    name: "Import grouping order"
+    intent: >
+      Group imports: standard library, then third-party, then local (blank line
+      between groups). Order within groups is typically alphabetical or by
+      isort/ruff so tooling enforces consistency.
+    epistemic_state: "known"
+    constraints:
+      - "Import grouping: stdlib → third-party → local (blank line between)"
+  - uid: PIG-PY.IMPL.IMP.3
+    name: "Tool enforcement (ruff/isort)"
+    intent: >
+      Let the linter enforce import order and style. Ruff includes isort (I
+      rules); use ruff check and ruff format so one tool handles lint and import
+      sorting. No manual formatting debates — automate.
+    epistemic_state: "known"
+    constraints:
+      - "• isort via ruff enforces ordering automatically"
+  - uid: PIG-PY.TEST.STRAT.1
+    name: "Pyramid and test mix"
+    intent: >
+      Follow the testing pyramid: many unit tests, some integration tests, few
+      E2E. Unit tests are fast and isolated; integration tests use real
+      dependencies and are marked (e.g. pytest markers). Minimum coverage target
+      negotiated per project.
+    epistemic_state: "known"
+    constraints:
+      - "pytest as the test framework (not unittest)"
+      - "Unit tests: fast (<100ms each), no external dependencies"
+      - "Integration tests: real dependencies, marked with pytest markers"
+  - uid: PIG-PY.TEST.STRAT.2
+    name: "Unit test discipline"
+    intent: >
+      Unit tests verify one behavior; use AAA (Arrange, Act, Assert). Test
+      business logic, data transforms, edge cases, and error conditions. Do not
+      test framework code, trivial getters, or third-party behavior. Reproduce
+      bugs with a failing test before fixing.
+    epistemic_state: "known"
+    constraints:
+      - "Test behavior at public API level, not private internals"
+      - "One assertion per test (guideline); related assertions acceptable"
+  - uid: PIG-PY.TEST.STRAT.3
+    name: "Integration scope and isolation"
+    intent: >
+      Integration tests verify components together (DB, API, multi-service). Use
+      test databases and isolation (e.g. rollback, testcontainers) so tests do
+      not interfere. Balance count so suite stays runnable in CI.
+    epistemic_state: "known"
+    constraints:
+      - "Test isolation: real but isolated deps (e.g. in-memory or dedicated
+        test DB)"
+  - uid: PIG-PY.TEST.LAY.1
+    name: "tests/ layout and mirroring"
+    intent: >
+      Place tests in a tests/ directory at project root, separate from src/.
+      Mirror source structure so tests/test_<module>.py maps to source modules.
+      Optionally group by unit/, integration/, e2e/.
+    epistemic_state: "known"
+    constraints:
+      - "tests/ directory at project root, separate from src/"
+      - "Mirror source structure: tests/test_<module>.py"
+  - uid: PIG-PY.TEST.LAY.2
+    name: "Test file and function naming"
+    intent: >
+      Test files: test_<module>.py. Test functions: test_<behavior> or
+      test_<unit>_<scenario>_<expected>. Test classes: Test<ClassName>. Names
+      should describe behavior so failures are self-explanatory.
+    epistemic_state: "known"
+    constraints:
+      - "Test names describe behavior: test_user_creation_validates_email"
+  - uid: PIG-PY.TEST.LAY.3
+    name: "conftest.py placement"
+    intent: >
+      Use conftest.py for shared fixtures at the appropriate directory level:
+      project-wide in tests/conftest.py, integration-specific in
+      tests/integration/conftest.py. Fixtures in conftest are auto-discovered by
+      pytest.
+    epistemic_state: "known"
+    constraints:
+      - "conftest.py for shared fixtures at appropriate directory level"
+  - uid: PIG-PY.TEST.FIX.1
+    name: "Pytest fixtures and scopes"
+    intent: >
+      Use pytest fixtures for reusable setup and teardown; prefer function scope
+      by default. Use module or session scope only for expensive setup (e.g. DB
+      schema). Yield for teardown; avoid higher-scoped fixture depending on
+      lower-scoped.
+    epistemic_state: "known"
+    constraints:
+      - "pytest fixtures for reusable setup/teardown"
+      - "Scope: function (default), class, module, session — match lifetime to
+        cost"
+  - uid: PIG-PY.TEST.FIX.2
+    name: "Factories for complex data"
+    intent: >
+      Use factory functions or factory_boy for complex test objects instead of
+      one large fixture. Prefer tmp_path for filesystem tests. Keep fixtures
+      focused and composable.
+    epistemic_state: "known"
+    constraints:
+      - "Factory functions (or factory_boy) for complex test objects"
+      - "Use tmp_path fixture for filesystem tests"
+  - uid: PIG-PY.TEST.FIX.3
+    name: "Mock external services only"
+    intent: >
+      Mock external services (APIs, databases, filesystem) to achieve speed and
+      isolation. Do not mock internal code; if you need to mock it, the design
+      may be wrong — prefer dependency injection and testing at public API.
+    epistemic_state: "known"
+    constraints:
+      - "Mock external services (APIs, databases, filesystem)"
+      - "Avoid mocking internal code — if you need to mock it, the design may be
+        wrong"
+  - uid: PIG-PY.DOC.STR.1
+    name: "Where docstrings are required"
+    intent: >
+      Docstrings are mandatory on all public functions, classes, and modules
+      with non-obvious purpose. Complex private functions should have
+      docstrings. Match documentation level to audience (docstrings for
+      developers using the API).
+    epistemic_state: "known"
+    constraints:
+      - "All public functions and classes must have docstrings"
+      - "Complex private functions should have docstrings"
+  - uid: PIG-PY.DOC.STR.2
+    name: "Google style sections"
+    intent: >
+      Use Google-style docstrings: Args, Returns, Raises, and Example (or Note)
+      sections. Document parameters with type and purpose; document return value
+      and exceptions raised. Include Examples when usage is non-obvious.
+    epistemic_state: "known"
+    constraints:
+      - "Google style (Args, Returns, Raises, Example sections)"
+      - "Include Examples section when usage is non-obvious"
+  - uid: PIG-PY.DOC.STR.3
+    name: "First line and imperative mood"
+    intent: >
+      First line of the docstring is an imperative-mood, one-sentence summary
+      (e.g. "Fetch a user by ID."). No "This function fetches...". Extended
+      description can follow for context and edge cases.
+    epistemic_state: "known"
+    constraints:
+      - "First line: imperative mood, one sentence"
+  - uid: PIG-PY.DOC.INL.1
+    name: "Comments explain why not what"
+    intent: >
+      Inline comments explain why the code is written this way, not what it does
+      — the code should be self-documenting for the what. Use comments for
+      non-obvious business logic, workarounds, performance choices, and
+      references to external resources.
+    epistemic_state: "known"
+    constraints:
+      - "Comments explain WHY, never WHAT (the code says what)"
+  - uid: PIG-PY.DOC.INL.2
+    name: "TODO/FIXME conventions"
+    intent: >
+      Use TODO/FIXME/HACK/NOTE markers with context. Prefer TODO(username):
+      description so ownership and intent are clear. Fix or remove before
+      long-term merge when possible.
+    epistemic_state: "known"
+    constraints:
+      - "TODO/FIXME markers include author and context"
+  - uid: PIG-PY.DOC.INL.3
+    name: "No commented-out code"
+    intent: >
+      Do not leave commented-out code in the tree; version control tracks
+      history. Delete dead code; use git to recover if needed. Strategy comments
+      before complex algorithms are encouraged.
+    epistemic_state: "known"
+    constraints:
+      - "No commented-out code — version control tracks history"
+  - uid: PIG-PY.TOOL.LINT.1
+    name: "Ruff lint rules and config"
+    intent: >
+      Use Ruff as the single linter (replaces flake8, isort, pyupgrade). Enable
+      rule sets: E, W, F, I, B, UP, SIM (and optionally PTH, RUF). Configure
+      per-file ignores (e.g. tests allow assert S101; __init__ allow F401). Use
+      fixable = ["ALL"] and run ruff check --fix.
+    epistemic_state: "known"
+    constraints:
+      - "Ruff with rule sets: E, W, F, I, B, UP, SIM"
+      - "Pre-commit hooks for lint + format + type check"
+  - uid: PIG-PY.TOOL.LINT.2
+    name: "Formatting and line length"
+    intent: >
+      Use Black or ruff format for formatting. Line length 88 (Black default).
+      Configure in [tool.black] or [tool.ruff.format]. Auto-format on save or
+      pre-commit so formatting is consistent and debate-free.
+    epistemic_state: "known"
+    constraints:
+      - "Line length 88 (Black default)"
+      - "Auto-format on save or pre-commit — no manual formatting debates"
+  - uid: PIG-PY.TOOL.LINT.3
+    name: "Enforcement in CI"
+    intent: >
+      Run lint and format checks in CI; fail the build on violations. Use
+      pre-commit hooks locally so violations are caught before push. Single tool
+      choice (Ruff) reduces config drift and CI time.
+    epistemic_state: "known"
+    constraints:
+      - "Enforced via pre-commit hooks and CI"
+  - uid: PIG-PY.TOOL.PKG.1
+    name: "pyproject.toml as single config"
+    intent: >
+      Use pyproject.toml as the single project metadata and build config file.
+      No setup.py or setup.cfg for standard metadata. PEP 517/518 compliant
+      build system; declarative over imperative.
+    epistemic_state: "known"
+    constraints:
+      - "pyproject.toml only — no setup.py, no setup.cfg"
+  - uid: PIG-PY.TOOL.PKG.2
+    name: "[project] and [build-system]"
+    intent: >
+      [project] defines name, version, description, requires-python,
+      dependencies, optional-dependencies. [build-system] specifies
+      build-backend (hatchling, flit-core, setuptools). Version may be static or
+      dynamic (e.g. from __version__).
+    epistemic_state: "known"
+    constraints:
+      - "Build backend: hatchling, flit, or setuptools (project choice)"
+      - "Version in pyproject.toml or dynamic via __version__"
+  - uid: PIG-PY.TOOL.PKG.3
+    name: "Entry points and [tool.*]"
+    intent: >
+      Declare CLI and plugin entry points in [project.scripts] and
+      [project.entry-points]. Use [tool.*] sections for tool config (ruff, mypy,
+      pytest) so one file holds project and tool settings.
+    epistemic_state: "known"
+    constraints:
+      - "Entry points declared in pyproject.toml [project.scripts]"
+  - uid: PIG-PY.PERF.CONC.1
+    name: "asyncio for I/O-bound concurrency"
+    intent: >
+      Use async/await (asyncio) for I/O-bound concurrency: network, file system,
+      subprocess waits. Prefer asyncio.gather for concurrent tasks; handle
+      timeouts and errors explicitly. Do not use async unless concurrency is
+      needed — sync is simpler when sufficient.
+    epistemic_state: "known"
+    constraints:
+      - "asyncio for I/O-bound concurrency (network, file system)"
+      - "No premature async — sync is simpler when concurrency isn't needed"
+  - uid: PIG-PY.PERF.CONC.2
+    name: "multiprocessing for CPU-bound parallelism"
+    intent: >
+      Use multiprocessing for CPU-bound parallelism; the GIL does not apply
+      across processes. Use Pool for map-style work; guard main with if __name__
+      == "__main__" on Windows/macOS. Prefer concurrent.futures for simple
+      parallelism when appropriate.
+    epistemic_state: "known"
+    constraints:
+      - "multiprocessing for CPU-bound parallelism"
+      - "Prefer concurrent.futures for simple parallelism"
+  - uid: PIG-PY.PERF.CONC.3
+    name: "threading only for blocking code"
+    intent: >
+      Use threading only when wrapping blocking third-party libraries (e.g.
+      synchronous HTTP) or when the API requires a thread. Threads do not
+      provide true CPU parallelism due to the GIL; use for I/O overlap or
+      integration with blocking APIs.
+    epistemic_state: "known"
+    constraints:
+      - "threading only when wrapping blocking third-party code"
+
+treearcs:
+  # L0 → L1
+  - parent: PIG-PY.ROOT
+    child: PIG-PY.STRUCT
+  - parent: PIG-PY.ROOT
+    child: PIG-PY.IMPL
+  - parent: PIG-PY.ROOT
+    child: PIG-PY.TEST
+  - parent: PIG-PY.ROOT
+    child: PIG-PY.DOC
+  - parent: PIG-PY.ROOT
+    child: PIG-PY.TOOL
+  - parent: PIG-PY.ROOT
+    child: PIG-PY.PERF
+  # L1 → L2: Structure
+  - parent: PIG-PY.STRUCT
+    child: PIG-PY.STRUCT.PKG
+  - parent: PIG-PY.STRUCT
+    child: PIG-PY.STRUCT.MOD
+  - parent: PIG-PY.STRUCT
+    child: PIG-PY.STRUCT.DEP
+  # L1 → L2: Implementation
+  - parent: PIG-PY.IMPL
+    child: PIG-PY.IMPL.NAME
+  - parent: PIG-PY.IMPL
+    child: PIG-PY.IMPL.TYPE
+  - parent: PIG-PY.IMPL
+    child: PIG-PY.IMPL.PARA
+  - parent: PIG-PY.IMPL
+    child: PIG-PY.IMPL.ERR
+  - parent: PIG-PY.IMPL
+    child: PIG-PY.IMPL.API
+  - parent: PIG-PY.IMPL
+    child: PIG-PY.IMPL.IMP
+  # L1 → L2: Testing
+  - parent: PIG-PY.TEST
+    child: PIG-PY.TEST.STRAT
+  - parent: PIG-PY.TEST
+    child: PIG-PY.TEST.LAY
+  - parent: PIG-PY.TEST
+    child: PIG-PY.TEST.FIX
+  # L1 → L2: Documentation
+  - parent: PIG-PY.DOC
+    child: PIG-PY.DOC.STR
+  - parent: PIG-PY.DOC
+    child: PIG-PY.DOC.INL
+  # L1 → L2: Tooling
+  - parent: PIG-PY.TOOL
+    child: PIG-PY.TOOL.LINT
+  - parent: PIG-PY.TOOL
+    child: PIG-PY.TOOL.PKG
+  # L1 → L2: Performance
+  - parent: PIG-PY.PERF
+    child: PIG-PY.PERF.CONC
+  # L2 → L3: Structure
+  - parent: PIG-PY.STRUCT.PKG
+    child: PIG-PY.STRUCT.PKG.1
+  - parent: PIG-PY.STRUCT.PKG
+    child: PIG-PY.STRUCT.PKG.2
+  - parent: PIG-PY.STRUCT.PKG
+    child: PIG-PY.STRUCT.PKG.3
+  - parent: PIG-PY.STRUCT.MOD
+    child: PIG-PY.STRUCT.MOD.1
+  - parent: PIG-PY.STRUCT.MOD
+    child: PIG-PY.STRUCT.MOD.2
+  - parent: PIG-PY.STRUCT.MOD
+    child: PIG-PY.STRUCT.MOD.3
+  - parent: PIG-PY.STRUCT.DEP
+    child: PIG-PY.STRUCT.DEP.1
+  - parent: PIG-PY.STRUCT.DEP
+    child: PIG-PY.STRUCT.DEP.2
+  - parent: PIG-PY.STRUCT.DEP
+    child: PIG-PY.STRUCT.DEP.3
+  # L2 → L3: Implementation
+  - parent: PIG-PY.IMPL.NAME
+    child: PIG-PY.IMPL.NAME.1
+  - parent: PIG-PY.IMPL.NAME
+    child: PIG-PY.IMPL.NAME.2
+  - parent: PIG-PY.IMPL.NAME
+    child: PIG-PY.IMPL.NAME.3
+  - parent: PIG-PY.IMPL.TYPE
+    child: PIG-PY.IMPL.TYPE.1
+  - parent: PIG-PY.IMPL.TYPE
+    child: PIG-PY.IMPL.TYPE.2
+  - parent: PIG-PY.IMPL.TYPE
+    child: PIG-PY.IMPL.TYPE.3
+  - parent: PIG-PY.IMPL.PARA
+    child: PIG-PY.IMPL.PARA.1
+  - parent: PIG-PY.IMPL.PARA
+    child: PIG-PY.IMPL.PARA.2
+  - parent: PIG-PY.IMPL.PARA
+    child: PIG-PY.IMPL.PARA.3
+  - parent: PIG-PY.IMPL.ERR
+    child: PIG-PY.IMPL.ERR.1
+  - parent: PIG-PY.IMPL.ERR
+    child: PIG-PY.IMPL.ERR.2
+  - parent: PIG-PY.IMPL.ERR
+    child: PIG-PY.IMPL.ERR.3
+  - parent: PIG-PY.IMPL.API
+    child: PIG-PY.IMPL.API.1
+  - parent: PIG-PY.IMPL.API
+    child: PIG-PY.IMPL.API.2
+  - parent: PIG-PY.IMPL.API
+    child: PIG-PY.IMPL.API.3
+  - parent: PIG-PY.IMPL.IMP
+    child: PIG-PY.IMPL.IMP.1
+  - parent: PIG-PY.IMPL.IMP
+    child: PIG-PY.IMPL.IMP.2
+  - parent: PIG-PY.IMPL.IMP
+    child: PIG-PY.IMPL.IMP.3
+  # L2 → L3: Testing
+  - parent: PIG-PY.TEST.STRAT
+    child: PIG-PY.TEST.STRAT.1
+  - parent: PIG-PY.TEST.STRAT
+    child: PIG-PY.TEST.STRAT.2
+  - parent: PIG-PY.TEST.STRAT
+    child: PIG-PY.TEST.STRAT.3
+  - parent: PIG-PY.TEST.LAY
+    child: PIG-PY.TEST.LAY.1
+  - parent: PIG-PY.TEST.LAY
+    child: PIG-PY.TEST.LAY.2
+  - parent: PIG-PY.TEST.LAY
+    child: PIG-PY.TEST.LAY.3
+  - parent: PIG-PY.TEST.FIX
+    child: PIG-PY.TEST.FIX.1
+  - parent: PIG-PY.TEST.FIX
+    child: PIG-PY.TEST.FIX.2
+  - parent: PIG-PY.TEST.FIX
+    child: PIG-PY.TEST.FIX.3
+  # L2 → L3: Documentation
+  - parent: PIG-PY.DOC.STR
+    child: PIG-PY.DOC.STR.1
+  - parent: PIG-PY.DOC.STR
+    child: PIG-PY.DOC.STR.2
+  - parent: PIG-PY.DOC.STR
+    child: PIG-PY.DOC.STR.3
+  - parent: PIG-PY.DOC.INL
+    child: PIG-PY.DOC.INL.1
+  - parent: PIG-PY.DOC.INL
+    child: PIG-PY.DOC.INL.2
+  - parent: PIG-PY.DOC.INL
+    child: PIG-PY.DOC.INL.3
+  # L2 → L3: Tooling
+  - parent: PIG-PY.TOOL.LINT
+    child: PIG-PY.TOOL.LINT.1
+  - parent: PIG-PY.TOOL.LINT
+    child: PIG-PY.TOOL.LINT.2
+  - parent: PIG-PY.TOOL.LINT
+    child: PIG-PY.TOOL.LINT.3
+  - parent: PIG-PY.TOOL.PKG
+    child: PIG-PY.TOOL.PKG.1
+  - parent: PIG-PY.TOOL.PKG
+    child: PIG-PY.TOOL.PKG.2
+  - parent: PIG-PY.TOOL.PKG
+    child: PIG-PY.TOOL.PKG.3
+  # L2 → L3: Performance
+  - parent: PIG-PY.PERF.CONC
+    child: PIG-PY.PERF.CONC.1
+  - parent: PIG-PY.PERF.CONC
+    child: PIG-PY.PERF.CONC.2
+  - parent: PIG-PY.PERF.CONC
+    child: PIG-PY.PERF.CONC.3
+
+# Intra-graph semantic links (requires, refines, dataflow)
+intentlinks:
+  - uid: PIG-PY.IMPL.ERR_PIG-PY.IMPL.API
+    src: PIG-PY.IMPL.ERR
+    dst: PIG-PY.IMPL.API
+    intent: Error handling applies at the API boundary; IMPL.API defines where to
+      validate, IMPL.ERR defines how.
+  - uid: PIG-PY.IMPL.API_PIG-PY.IMPL.NAME
+    src: PIG-PY.IMPL.API
+    dst: PIG-PY.IMPL.NAME
+    intent: The public API surface is expressed through names (functions,
+      parameters, modules); naming conventions apply there first.
+  - uid: PIG-PY.IMPL.TYPE_PIG-PY.IMPL.API
+    src: PIG-PY.IMPL.TYPE
+    dst: PIG-PY.IMPL.API
+    intent: Type annotations are part of the public contract; typing discipline
+      applies to the API surface.
+  - uid: PIG-PY.TEST_PIG-PY.IMPL
+    src: PIG-PY.TEST
+    dst: PIG-PY.IMPL
+    intent: Tests exercise implementation; the testing dimension assumes
+      implementation exists and is the primary object under test.
+  - uid: PIG-PY.TEST.STRAT_PIG-PY.IMPL.API
+    src: PIG-PY.TEST.STRAT
+    dst: PIG-PY.IMPL.API
+    intent: Strategy to test at public API level depends on having an explicit,
+      stable API boundary.
+  - uid: PIG-PY.TEST.LAY_PIG-PY.STRUCT
+    src: PIG-PY.TEST.LAY
+    dst: PIG-PY.STRUCT
+    intent: Test layout mirrors source structure; tests/ organization follows the
+      project structure defined by STRUCT.
+  - uid: PIG-PY.DOC.STR_PIG-PY.IMPL.API
+    src: PIG-PY.DOC.STR
+    dst: PIG-PY.IMPL.API
+    intent: Docstring style applies to the public API; DOC.STR documents the
+      contract defined by IMPL.API.
+  - uid: PIG-PY.STRUCT.DEP_PIG-PY.STRUCT.PKG
+    src: PIG-PY.STRUCT.DEP
+    dst: PIG-PY.STRUCT.PKG
+    intent: Dependency management (pyproject.toml, lockfiles) constrains and
+      supports package layout and installability.
+  - uid: PIG-PY.TOOL.LINT_PIG-PY.IMPL
+    src: PIG-PY.TOOL.LINT
+    dst: PIG-PY.IMPL
+    intent: Linting enforces implementation style (naming, imports, format); tooling
+      serves the implementation defaults.
+  - uid: PIG-PY.TOOL.PKG_PIG-PY.STRUCT.DEP
+    src: PIG-PY.TOOL.PKG
+    dst: PIG-PY.STRUCT.DEP
+    intent: Packaging conventions (pyproject.toml) are the single place where
+      dependencies are declared; TOOL.PKG and STRUCT.DEP align.
+
+# Inter-graph links to philosophy (grounding; not every node linked)
+inter_intentlinks:
+  - uid: pig-py-defaults:PIG-PY.IMPL.ERR_python-kb-philosophy:DEFENSIVE
+    src: pig-py-defaults:PIG-PY.IMPL.ERR
+    dst: python-kb-philosophy:DEFENSIVE
+    intent: Fail-fast, validate at boundaries, and never swallow exceptions silently
+      ground in Defensive Design.
+  - uid: pig-py-defaults:PIG-PY.IMPL.API_python-kb-philosophy:DEFENSIVE
+    src: pig-py-defaults:PIG-PY.IMPL.API
+    dst: python-kb-philosophy:DEFENSIVE
+    intent: Validate at system boundaries and trust internal code; explicit
+      public/private boundary is defensive design.
+  - uid: pig-py-defaults:PIG-PY.IMPL.NAME_python-kb-philosophy:COMMUNICATION
+    src: pig-py-defaults:PIG-PY.IMPL.NAME
+    dst: python-kb-philosophy:COMMUNICATION
+    intent: Naming as UX, the 20-Minute Rule, and Hallway Test ground naming
+      conventions in Communication as UX.
+  - uid: pig-py-defaults:PIG-PY.IMPL.PARA_python-kb-philosophy:POLYGLOT
+    src: pig-py-defaults:PIG-PY.IMPL.PARA
+    dst: python-kb-philosophy:POLYGLOT
+    intent: Polyglot pragmatism—OOP/FP/imperative by problem—grounds paradigm
+      balance in Polyglot Pragmatism.
+  - uid: pig-py-defaults:PIG-PY.IMPL.TYPE_python-kb-philosophy:DATACENTRICITY
+    src: pig-py-defaults:PIG-PY.IMPL.TYPE
+    dst: python-kb-philosophy:DATACENTRICITY
+    intent: Type annotations make invalid states unrepresentable and support
+      data-first design; typing grounds in Data-Centric Thinking.
+  - uid: pig-py-defaults:PIG-PY.STRUCT_python-kb-philosophy:STRUCTURE
+    src: pig-py-defaults:PIG-PY.STRUCT
+    dst: python-kb-philosophy:STRUCTURE
+    intent: Project structure and src-layout conventions ground in Structure Primacy
+      (structure before implementation).
+  - uid: pig-py-defaults:PIG-PY.STRUCT.MOD_python-kb-philosophy:STRUCTURE
+    src: pig-py-defaults:PIG-PY.STRUCT.MOD
+    dst: python-kb-philosophy:STRUCTURE
+    intent: Module granularity and single-concern modules are an application of
+      Structure Primacy at code level.
+  - uid: pig-py-defaults:PIG-PY.STRUCT.DEP_python-kb-philosophy:REPRODUCIBILITY
+    src: pig-py-defaults:PIG-PY.STRUCT.DEP
+    dst: python-kb-philosophy:REPRODUCIBILITY
+    intent: Lockfiles, version pinning, and dev/runtime separation ground dependency
+      management in Reproducibility.
+  - uid: pig-py-defaults:PIG-PY.DOC_python-kb-philosophy:COMMUNICATION
+    src: pig-py-defaults:PIG-PY.DOC
+    dst: python-kb-philosophy:COMMUNICATION
+    intent: Documentation as UX and docstrings for the reader ground the
+      documentation dimension in Communication as UX.
+  - uid: pig-py-defaults:PIG-PY.DOC.INL_python-kb-philosophy:COMMUNICATION
+    src: pig-py-defaults:PIG-PY.DOC.INL
+    dst: python-kb-philosophy:COMMUNICATION
+    intent: Comments explain why not what; inline documentation serves the reader
+      and is communication.
+  - uid: pig-py-defaults:PIG-PY.TOOL.PKG_python-kb-philosophy:REPRODUCIBILITY
+    src: pig-py-defaults:PIG-PY.TOOL.PKG
+    dst: python-kb-philosophy:REPRODUCIBILITY
+    intent: pyproject.toml as single source, PEP 517 builds, and reproducible
+      packaging ground in Reproducibility.
+  - uid: pig-py-defaults:PIG-PY.TEST.STRAT_python-kb-philosophy:INTENTIONALITY
+    src: pig-py-defaults:PIG-PY.TEST.STRAT
+    dst: python-kb-philosophy:INTENTIONALITY
+    intent: Test behavior not implementation; tests as intentional, defensible
+      artifacts that survive refactoring.
+
+lenses:
+  default:
+    name: default
+    nodes:
+      {
+        PIG-PY.ROOT: { lod: lean, position: { x: 1572.1312636235102, y: 212.13013346181555 } },
+        PIG-PY.STRUCT: { lod: lean, position: { x: 3890.5, y: 376.5 } },
+        PIG-PY.TOOL: { lod: lean, position: { x: 3881.5, y: 96.5 } },
+        PIG-PY.TOOL.PKG: { lod: lean, position: { x: 4260, y: 102 } },
+        PIG-PY.TOOL.LINT: { lod: lean, position: { x: 3620, y: 102 } },
+        PIG-PY.TOOL.LINT.1: { lod: lean, position: { x: 3620, y: 102 } },
+        PIG-PY.TOOL.LINT.3: { lod: lean, position: { x: 3420, y: 102 } },
+        PIG-PY.TOOL.LINT.2: { lod: lean, position: { x: 3820, y: 102 } },
+        PIG-PY.STRUCT.DEP: { lod: lean, position: { x: 4254.497457040579, y: 319.5767274646598 } },
+        PIG-PY.STRUCT.DEP.3: { lod: lean, position: { x: 4035.450192950275, y: 320.8465450706802 } },
+        PIG-PY.TOOL.PKG.1: { lod: lean, position: { x: 4260, y: 102 } },
+        PIG-PY.STRUCT.PKG: { lod: lean, position: { x: 4260, y: 444 } },
+        PIG-PY.STRUCT.PKG.1: { lod: lean, position: { x: 4260, y: 444 } },
+        PIG-PY.STRUCT.DEP.1: { lod: lean, position: { x: 4260, y: 320 } },
+        PIG-PY.TOOL.PKG.3: { lod: lean, position: { x: 4060, y: 102 } },
+        PIG-PY.PERF: { lod: lean, position: { x: 4876.5, y: 93.5 } },
+        PIG-PY.IMPL: { lod: lean, position: { x: 1836.0149332149185, y: 592.7068482490265 } },
+        PIG-PY.IMPL.PARA: { lod: lean, position: { x: 1523.776572550415, y: 519.8702417771591 } },
+        PIG-PY.IMPL.IMP: { lod: lean, position: { x: 2336.2372243632276, y: 536.4941865803075 } },
+        PIG-PY.IMPL.ERR: { lod: lean, position: { x: 1040.4022504908064, y: 525.5808201136496 } },
+        PIG-PY.IMPL.PARA.1: { lod: lean, position: { x: 2719.2263132285393, y: 1232.0397261622097 } },
+        PIG-PY.DOC: { lod: lean, position: { x: 1446.6670927271316, y: 347.6862019781134 } },
+        PIG-PY.TEST: { lod: lean, position: { x: 1418.3213501250111, y: 192.86408208590126 } },
+        PIG-PY.IMPL.API: { lod: lean, position: { x: 1912.307504041321, y: 609.7298026747131 } },
+        PIG-PY.IMPL.NAME: { lod: lean, position: { x: 1084.0095794972233, y: 592.1703337717457 } },
+        PIG-PY.TEST.STRAT: { lod: lean, position: { x: 1660.569914991456, y: 117.3877047693107 } },
+        PIG-PY.TEST.STRAT.1: { lod: lean, position: { x: 1683.3665146496942, y: 121.94702470095837 } },
+        PIG-PY.IMPL.IMP.2: { lod: lean, position: { x: 2524.5304176290697, y: 534.2434809270483 } },
+        PIG-PY.IMPL.API.3: { lod: lean, position: { x: 1713.2423508637462, y: 609.916772039198 } },
+        PIG-PY.PERF.CONC: { lod: lean },
+        PIG-PY.PERF.CONC.2: { lod: lean, position: { x: 5105.483609441282, y: 244.06627486786044 } },
+        PIG-PY.PERF.CONC.1: { lod: lean, position: { x: 5083.0679376781645, y: 109.00213789896323 } },
+        PIG-PY.TEST.FIX: { lod: lean, position: { x: 2539.9221279676863, y: 100.80038936016157 } },
+        PIG-PY.STRUCT.MOD: { lod: lean, position: { x: 3702.842707440445, y: 676.9737913527654 } },
+        PIG-PY.IMPL.TYPE: { lod: lean, position: { x: 2131.036400862844, y: 676.9976241116423 } },
+        PIG-PY.TEST.LAY: { lod: lean, position: { x: 2958.7266668498046, y: 92.45307180205998 } },
+        PIG-PY.DOC.STR: { lod: lean, position: { x: 845.1185702888216, y: 97.91268394814614 } },
+        PIG-PY.IMPL.NAME.2: { lod: lean, position: { x: 1353.0360135455733, y: 779.1681904232022 } }
+      }
+  test_lens:
+    name: test_lens
+    nodes:
+      {
+        PIG-PY.TEST: { lod: lean, position: { x: 2719.4543090306934, y: 1.6143719886807233 } },
+        PIG-PY.TOOL: { lod: lean, position: { x: 2558.1670985955416, y: 99.24428005033974 } },
+        PIG-PY.STRUCT: { lod: lean, position: { x: 2395.5372175384086, y: 332.5305063981885 } },
+        PIG-PY.PERF: { lod: lean, position: { x: 2678.025319909425, y: 263.88178770701967 } },
+        PIG-PY.DOC: { lod: lean, position: { x: 2034.6914260442911, y: 122.50348047353255 } },
+        PIG-PY.ROOT: { lod: lean, position: { x: 1925.002037339682, y: 312.70562512364813 } },
+        PIG-PY.IMPL: { lod: lean, position: { x: 2069.688010443739, y: 246.67656340128687 } }
+      }
+  test_3:
+    name: test_3
+    nodes:
+      {
+        PIG-PY.ROOT: { lod: lean },
+        PIG-PY.STRUCT: { lod: lean, position: { x: 3890.5, y: 376.5 } },
+        PIG-PY.IMPL: { lod: lean, position: { x: 1939, y: 443.5 } },
+        PIG-PY.TEST: { lod: lean, position: { x: 2155.25, y: 96.5 } },
+        PIG-PY.DOC: { lod: lean, position: { x: 604.5, y: 96.5 } },
+        PIG-PY.TOOL: { lod: lean, position: { x: 3880, y: 91 } },
+        PIG-PY.PERF: { lod: lean, position: { x: 4876.5, y: 93.5 } }
+      }
+  test_4:
+    name: test_4
+    nodes:
+      PIG-PY.ROOT:
+        lod: lean
+        position:
+          x: 2531.415440018855
+          y: 276.86349166487935
+      PIG-PY.STRUCT:
+        lod: lean
+        position:
+          x: 1453.7142655846633
+          y: 711.063581229362
+      PIG-PY.IMPL:
+        lod: lean
+        position:
+          x: 1047.8623713915022
+          y: 335.2624583429871
+      PIG-PY.TEST:
+        lod: lean
+        position:
+          x: 1463.7394646240782
+          y: 218.05254585641654
+      PIG-PY.DOC:
+        lod: lean
+        position:
+          x: 2394.039964045906
+          y: 184.51818740122303
+      PIG-PY.TOOL:
+        lod: lean
+        position:
+          x: 1670.3599240348342
+          y: 59.01784508916078
+      PIG-PY.PERF:
+        lod: lean
+        position:
+          x: 1492.3839930108206
+          y: 62.048047935951466
+      PIG-PY.PERF.CONC:
+        lod: lean
+        position:
+          x: 1230.8131894898615
+          y: -52.67160145010795
+      PIG-PY.DOC.STR:
+        lod: lean
+        position:
+          x: 2607.4142064627113
+          y: 358.8052792938087
+      PIG-PY.DOC.INL:
+        lod: lean
+        position:
+          x: 2503.2945923076322
+          y: -77.6228138145639
+      PIG-PY.STRUCT.PKG:
+        lod: lean
+        position:
+          x: 2240.445058212456
+          y: 636.4602204983997
+      PIG-PY.STRUCT.MOD:
+        lod: full
+        position:
+          x: 1448.4089117585713
+          y: 723.1748617271878
+      PIG-PY.STRUCT.DEP:
+        lod: lean
+        position:
+          x: 1399.7898933837814
+          y: 601.625414606862
+      PIG-PY.DOC.STR.1:
+        lod: lean
+        position:
+          x: 2607.4142064627113
+          y: 358.8052792938087
+      PIG-PY.DOC.STR.2:
+        lod: lean
+        position:
+          x: 2807.4142064627113
+          y: 358.8052792938087
+      PIG-PY.DOC.STR.3:
+        lod: lean
+        position:
+          x: 2407.4142064627113
+          y: 358.8052792938087
+      PIG-PY.STRUCT.PKG.1:
+        lod: lean
+        position:
+          x: 1764.280308591643
+          y: 621.4975573864702
+      PIG-PY.STRUCT.PKG.2:
+        lod: lean
+        position:
+          x: 1964.280308591643
+          y: 621.4975573864702
+      PIG-PY.STRUCT.PKG.3:
+        lod: lean
+        position:
+          x: 1564.280308591643
+          y: 621.4975573864702
+      PIG-PY.TEST.STRAT:
+        lod: lean
+        position:
+          x: 1459.7666157158264
+          y: 153.14001356498392
+      PIG-PY.TEST.LAY:
+        lod: lean
+        position:
+          x: 2739.7666157158264
+          y: 153.14001356498392
+      PIG-PY.TEST.FIX:
+        lod: lean
+        position:
+          x: 2099.7666157158264
+          y: 153.14001356498392
+      PIG-PY.TOOL.LINT:
+        lod: lean
+        position:
+          x: 2012.3870751265827
+          y: -0.3946872022718537
+      PIG-PY.TOOL.PKG:
+        lod: lean
+        position:
+          x: 2652.3870751265827
+          y: -0.3946872022718537
+      PIG-PY.TEST.FIX.1:
+        lod: lean
+        position:
+          x: 2099.7666157158264
+          y: 153.14001356498392
+      PIG-PY.TEST.FIX.2:
+        lod: lean
+        position:
+          x: 2299.7666157158264
+          y: 153.14001356498392
+      PIG-PY.TEST.FIX.3:
+        lod: lean
+        position:
+          x: 1899.7666157158264
+          y: 153.14001356498392
+      PIG-PY.TOOL.LINT.1:
+        lod: lean
+        position:
+          x: 2012.3870751265827
+          y: -0.3946872022718537
+      PIG-PY.TOOL.LINT.2:
+        lod: lean
+        position:
+          x: 2212.3870751265827
+          y: -0.3946872022718537
+      PIG-PY.TOOL.LINT.3:
+        lod: lean
+        position:
+          x: 1812.3870751265827
+          y: -0.3946872022718537

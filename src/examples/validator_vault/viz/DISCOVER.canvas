@@ -1,0 +1,41 @@
+{
+    "nodes": [
+        {
+            "id": "group_DISCOVER",
+            "x": -50,
+            "y": -100,
+            "width": 3000,
+            "height": 1360,
+            "type": "group",
+            "label": "Discovery"
+        },
+        {
+            "id": "node_DISCOVER_1",
+            "type": "file",
+            "file": "nodes/DISCOVER.1 Generated Cache Scanning.md",
+            "x": 300,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_DISCOVER_2",
+            "type": "file",
+            "file": "nodes/DISCOVER.2 Source Directory Scanning.md",
+            "x": 1200,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        },
+        {
+            "id": "node_DISCOVER_3",
+            "type": "file",
+            "file": "nodes/DISCOVER.3 Fallback Grep Search.md",
+            "x": 2100,
+            "y": 300,
+            "width": 600,
+            "height": 560
+        }
+    ],
+    "edges": []
+}
