@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get started with IntentGraph in five minutes</title>
+<meta name="description" content="Clone the repository, explore a bundled example graph with the ig-tool command line, then read the primers and the specification.">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="assets/logo-white.svg" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <picture>
+        <source srcset="assets/logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img src="assets/logo.svg" alt="" width="34" height="31">
+      </picture>
+      <span>IntentGraph</span>
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="concepts.html">Concepts</a></li>
+        <li><a href="start.html" aria-current="page">Get started</a></li>
+        <li><a href="https://github.com/intent-graph/intent_graph">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Get started</p>
+    <h1>Try it in five minutes</h1>
+    <p class="lead">You will clone the repository, look at a bundled example graph as a tree, validate it, and cut a lens out of it. Nothing is installed globally.</p>
+    <p class="muted measure">You need <code>git</code> and <a href="https://docs.astral.sh/uv/">uv</a>. The project requires Python 3.11 or newer; <code>uv</code> fetches it if needed. The example is a small, invented tool (a validator that compares SQL functions in a database with their source files), modelled as 21 nodes and 19 links.</p>
+
+    <ol class="steps">
+      <li>
+        <strong>Get the code.</strong>
+<pre><code>git clone https://github.com/intent-graph/intent_graph.git
+cd intent_graph</code></pre>
+      </li>
+      <li>
+        <strong>Look at the example graph as a tree.</strong> The first run builds a local environment, which takes a few seconds.
+<pre><code>uv run ig-tool tree -g src/examples/validator_graph.json --show-intent</code></pre>
+        <p>You see the root, five capabilities and fifteen sub-capabilities, each with its intent sentence. Without <code>--show-intent</code> you get the bare structure:</p>
+<pre><code>└── ROOT: SQL Function Sync Validator
+    ├── DISCOVER: Discovery
+    │   ├── DISCOVER.1: Generated Cache Scanning
+    │   ├── DISCOVER.2: Source Directory Scanning
+    │   └── DISCOVER.3: Fallback Grep Search
+    ├── PARSE: Parsing
+    …</code></pre>
+      </li>
+      <li>
+        <strong>Check that the graph is well formed.</strong> This tests the invariants (tree structure, valid link endpoints) and writes a report.
+<pre><code>uv run ig-tool validate -g src/examples/validator_graph.json -o report.yaml</code></pre>
+        <p>The summary printed on screen ends with <code>errors: 0</code> and <code>warnings: 0</code>.</p>
+      </li>
+      <li>
+        <strong>Take a lens on one part.</strong> The target is shown in full, the rest at lower detail, within a budget.
+<pre><code>uv run ig-tool lens build -g src/examples/validator_graph.json -t DISCOVER -b 30 -o lens.yaml</code></pre>
+        <p>Open <code>lens.yaml</code>: every node carries an <code>lod</code> field (<code>skeleton</code>, <code>lean</code> or <code>full</code>), as described in <a href="concepts.html#lens">the lens</a>.</p>
+      </li>
+      <li>
+        <strong>Start a graph of your own.</strong>
+<pre><code>uv run ig-tool init -o graph.json --template three-level --name "My Project"
+uv run ig-tool tree -g graph.json</code></pre>
+        <p>This creates a root with three placeholder modules. Rename and describe them with the <code>node</code> and <code>link</code> commands; the <a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_TOOLS.md">tools primer</a> has the syntax.</p>
+      </li>
+    </ol>
+
+    <div class="note">
+      <p><strong>Install it for good.</strong> To get <code>ig-tool</code> on your path from any directory, follow the install steps in the <a href="https://github.com/intent-graph/intent_graph/blob/main/README.md#ig-tool-cli">repository README</a>; it is the reference for installation and commands. The install is editable, so it points at your checkout: re-run it if you move the folder.</p>
+      <p><code>ig-tool</code> keeps a small usage log on your own machine; <code>ig-tool --no-telemetry</code> turns it off (see <code>ig-tool --help</code>).</p>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="read-next">
+  <div class="wrap">
+    <h2>Then read, in this order</h2>
+    <p class="measure">The primers are written for AI agents and humans alike. They are short and implementation-agnostic. Start at <a href="https://github.com/intent-graph/intent_graph/blob/main/agents/README.md">the primers index</a>, or go straight in:</p>
+    <ol class="tight measure">
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_00_PHILOSOPHY.md">Philosophy</a>: the problem, the five axioms, the invariants, the vocabulary.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_01_SEMANTICS.md">Semantics</a>: how to read nodes, fields and tree structure, and common misreadings.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_02_NAVIGATION.md">Navigation</a>: lenses, levels of detail, viewport operations.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_03A_EDITING.md">Editing</a>: changing a graph, decomposing nodes, propagating changes.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_TOOLS.md">Tools</a>: the <code>ig-tool</code> command reference.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_04_WORKFLOWS.md">Workflows</a>: Improve, Distill and Project, and the roles in each.</li>
+    </ol>
+    <h3>For the full picture</h3>
+    <ul class="tight measure">
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/project_definition.md">Project definition</a>: goals, philosophy and vocabulary.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/foundation_and_formalism/POSITIONING_SUMMARY.md">Positioning summary</a>: how IntentGraph relates to prior approaches.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/docs/usage_scenarios.md">Usage scenarios</a>: starting from scratch, refining, generating code, reverse-engineering.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/src/examples/README.md">The worked example</a>, including an Obsidian vault you can open and browse.</li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/ARCHITECTURE.md">Architecture</a> and <a href="https://github.com/intent-graph/intent_graph/blob/main/ROADMAP.md">roadmap</a>.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="companion">
+  <div class="wrap">
+    <h2>Companion repository: ai_tooling</h2>
+    <p class="measure"><a href="https://github.com/intent-graph/ai_tooling">ai_tooling</a> holds generic, reusable tooling and knowledge bases for working with AI coding agents: command-line tools for navigating and documenting codebases, a practice for thinking in levels of detail, and guideline knowledge bases an agent can consult mid-task. Several of the knowledge bases are themselves held as IntentGraphs, which makes them a good place to see real graphs.</p>
+    <p class="measure">It is open source: MIT for the code, CC BY 4.0 for the knowledge bases.</p>
+  </div>
+</section>
+
+<section class="alt" id="feedback">
+  <div class="wrap">
+    <h2>Feedback and contributions</h2>
+    <p class="measure">Issues are welcome, and are the best way to influence the project: bug reports, questions, use cases, criticism of the formalism. <a href="https://github.com/intent-graph/intent_graph/issues">Open an issue</a>.</p>
+    <p class="measure">Please read <a href="https://github.com/intent-graph/intent_graph/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> before opening a pull request: a pull request gives its content entirely to the owner. If you cannot agree to that, describe the change in an issue instead.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>IntentGraph is <strong>source-available</strong> under the PolyForm Shield License 1.0.0: free to use, modify and distribute for any purpose, including at work, except to provide a product that competes with IntentGraph.</p>
+    <ul>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/LICENSE.md">LICENSE.md</a></li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a></li>
+      <li><a href="https://github.com/intent-graph/intent_graph">Source on GitHub</a></li>
+      <li><a href="https://github.com/intent-graph/ai_tooling">Companion repository: ai_tooling</a></li>
+    </ul>
+  </div>
+</footer>
+</body>
+</html>

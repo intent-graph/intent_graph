@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IntentGraph concepts: graph, lens, levels of detail, projections</title>
+<meta name="description" content="The core ideas of IntentGraph: the intent graph, levels of detail, the lens, epistemic state, projections and agents, with diagrams.">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="assets/logo-white.svg" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <picture>
+        <source srcset="assets/logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img src="assets/logo.svg" alt="" width="34" height="31">
+      </picture>
+      <span>IntentGraph</span>
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="index.html">Overview</a></li>
+        <li><a href="concepts.html" aria-current="page">Concepts</a></li>
+        <li><a href="start.html">Get started</a></li>
+        <li><a href="https://github.com/intent-graph/intent_graph">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Concepts</p>
+    <h1>Six ideas that make it work</h1>
+    <p class="lead">An <strong>intent graph</strong> describes a system at mixed levels of detail. You look at it through a <strong>lens</strong>, you are honest about what you do not know through <strong>epistemic state</strong>, and you generate everything else as <strong>projections</strong>. <strong>Agents</strong> do the work.</p>
+    <nav aria-label="On this page">
+      <ul class="tight">
+        <li><a href="#graph">The graph</a></li>
+        <li><a href="#lod">Levels of detail</a></li>
+        <li><a href="#lens">The lens</a></li>
+        <li><a href="#epistemic">Epistemic state</a></li>
+        <li><a href="#projections">Projections</a></li>
+        <li><a href="#agents">Agents</a></li>
+      </ul>
+    </nav>
+  </div>
+</section>
+
+<section class="alt" id="graph">
+  <div class="wrap">
+    <h2>1. The graph</h2>
+    <p class="measure">An <strong>IntentGraph</strong> is a tree of units of intent plus relations that cut across the tree. Three building blocks:</p>
+    <dl class="defs">
+      <dt>intentnode</dt>
+      <dd>A unit of intent at some level of detail: what this part of the system is for and why. Fields include <code>intent</code>, <code>constraints</code>, <code>epistemic_state</code>, <code>assumptions</code>, <code>design_notes</code> and <code>examples</code>.</dd>
+      <dt>treearc</dt>
+      <dd>A refinement edge from parent to child. All treearcs together form a tree: one parent per node, no cycles.</dd>
+      <dt>intentlink</dt>
+      <dd>A directed, valued relation between any two nodes at any depth: data exchange, dependency, coordination. It says what must be true between them.</dd>
+    </dl>
+    <p class="measure">The tree is an <em>abstraction hierarchy</em>, not a call graph. A parent does not &ldquo;call&rdquo; its children; it summarises them at lower resolution. The test: if a reader has to open the children to learn what the parent is for, the parent is badly written. Zooming in adds information and never changes meaning.</p>
+
+    <figure>
+      <svg viewBox="0 0 480 292" role="img" aria-labelledby="g1-t g1-d">
+        <title id="g1-t">An example intent graph</title>
+        <desc id="g1-d">A tree with a root node, ROOT, and three children: CATALOG, CHECKOUT and ACCOUNTS. CHECKOUT has two children, PAYMENT and TAX. Each node shows an epistemic state: ROOT, CATALOG and CHECKOUT are known, ACCOUNTS is deferred, PAYMENT is undecided, TAX is risky. Dashed arrows are intentlinks: CATALOG to CHECKOUT, ACCOUNTS to CHECKOUT, and CATALOG down to PAYMENT, which crosses levels of the tree.</desc>
+        <defs>
+          <marker id="g1-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="s-head" d="M0 0 L10 5 L0 10 z"/></marker>
+        </defs>
+        <path class="s-tree" d="M240 54 V75 M82 75 H398 M82 75 V96 M240 75 V96 M398 75 V96 M240 142 V163 M170 163 H310 M170 163 V184 M310 163 V184"/>
+        <path class="s-link" marker-end="url(#g1-ah)" d="M146 119 H175"/>
+        <path class="s-link" marker-end="url(#g1-ah)" d="M334 119 H305"/>
+        <path class="s-link" marker-end="url(#g1-ah)" d="M82 142 C82 190 88 207 106 207"/>
+        <g text-anchor="middle">
+          <rect class="s-node" x="178" y="8" width="124" height="46" rx="6"/>
+          <text class="s-txt s-name" x="240" y="28">ROOT</text><text class="s-txt s-sm s-mute" x="240" y="45">known</text>
+          <rect class="s-node" x="20" y="96" width="124" height="46" rx="6"/>
+          <text class="s-txt s-name" x="82" y="116">CATALOG</text><text class="s-txt s-sm s-mute" x="82" y="133">known</text>
+          <rect class="s-node" x="178" y="96" width="124" height="46" rx="6"/>
+          <text class="s-txt s-name" x="240" y="116">CHECKOUT</text><text class="s-txt s-sm s-mute" x="240" y="133">known</text>
+          <rect class="s-node" x="336" y="96" width="124" height="46" rx="6"/>
+          <text class="s-txt s-name" x="398" y="116">ACCOUNTS</text><text class="s-txt s-sm s-mute" x="398" y="133">deferred</text>
+          <rect class="s-node" x="108" y="184" width="124" height="46" rx="6"/>
+          <text class="s-txt s-name" x="170" y="204">PAYMENT</text><text class="s-txt s-sm s-mute" x="170" y="221">undecided</text>
+          <rect class="s-node" x="248" y="184" width="124" height="46" rx="6"/>
+          <text class="s-txt s-name" x="310" y="204">TAX</text><text class="s-txt s-sm s-mute" x="310" y="221">risky</text>
+        </g>
+        <path class="s-tree" d="M20 258 H60"/>
+        <text class="s-txt s-sm" x="70" y="262">treearc: refinement, parent to child</text>
+        <path class="s-link" marker-end="url(#g1-ah)" d="M20 278 H60"/>
+        <text class="s-txt s-sm" x="70" y="282">intentlink: a valued relation, at any depth</text>
+      </svg>
+      <figcaption>A small example. The tree gives zoom; the dashed intentlinks give the relations that the tree alone cannot. The last line of each node is its epistemic state.</figcaption>
+    </figure>
+
+    <p class="measure">Specification: <a href="https://github.com/intent-graph/intent_graph/blob/main/foundation_and_formalism/VOCABULARY_AND_FORMALISM.md">vocabulary and formalism</a>, <a href="https://github.com/intent-graph/intent_graph/blob/main/intentlink_spec.md">intentlink specification</a>.</p>
+  </div>
+</section>
+
+<section id="lod">
+  <div class="wrap">
+    <h2>2. Levels of detail</h2>
+    <p class="measure">Not every part of a system deserves the same precision. IntentGraph lets each node be shown at one of three levels:</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Levels of detail table, scrolls sideways on narrow screens">
+      <table>
+        <caption>The three levels of detail, from least to most</caption>
+        <thead><tr><th scope="col">Level</th><th scope="col">What you see</th><th scope="col">Use it for</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">skeleton</th><td>Identifier and name only.</td><td>Distant context: it exists, and where.</td></tr>
+          <tr><th scope="row">lean</th><td>Adds the intent sentence and the epistemic state.</td><td>Orientation: the ancestors of what you work on.</td></tr>
+          <tr><th scope="row">full</th><td>Every field: constraints, design notes, examples, pointers to code, history.</td><td>The part you are actually changing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="measure">This is the same idea as the level of detail on a map: precision is spent where it matters. Cross-cutting facts are stated once, at the right level, and linked, not copied.</p>
+  </div>
+</section>
+
+<section class="alt" id="lens">
+  <div class="wrap">
+    <h2>3. The lens</h2>
+    <p class="measure">A <strong>lens</strong> is a view of the graph: a set of nodes that always includes the ancestors of every node it shows, each node at a chosen level of detail, plus the intentlinks whose two ends are both visible. You work through a lens rather than on the whole graph, so a person or an agent never has to hold the whole system in mind.</p>
+    <p class="measure">The default shape is simple: the <strong>target</strong> at full detail, its <strong>ancestors</strong> at lean, everything else at skeleton. The hierarchy stays visible, so you never lose your place. Lens operations include <em>focus</em>, <em>promote</em> and <em>demote</em> (change a node&rsquo;s level), <em>expand</em> (reveal children) and <em>prune</em>. Given a size budget, pruning removes the most distant branches first and keeps the tree valid.</p>
+
+    <figure>
+      <svg viewBox="0 0 480 372" role="img" aria-labelledby="l1-t l1-d">
+        <title id="l1-t">A lens on the example graph, focused on PAYMENT</title>
+        <desc id="l1-d">The same tree as before, shown through a lens targeted at PAYMENT. PAYMENT is shown at full detail, with its intent, state, constraints and design notes. Its ancestors CHECKOUT and ROOT are shown at lean detail, with an intent sentence and a state. All other nodes, CATALOG, ACCOUNTS and TAX, are shown as skeleton boxes with a name only.</desc>
+        <path class="s-tree" d="M240 66 V80 M82 80 H398 M82 80 V98 M240 80 V98 M398 80 V98 M240 156 V172 M170 172 H400 M170 172 V190 M400 172 V190"/>
+        <rect class="s-node" x="178" y="8" width="124" height="58" rx="6"/>
+        <text class="s-txt s-name" x="240" y="26" text-anchor="middle">ROOT</text>
+        <text class="s-txt s-sm" x="240" y="42" text-anchor="middle">Sell goods online</text>
+        <text class="s-txt s-sm s-mute" x="240" y="57" text-anchor="middle">known</text>
+
+        <rect class="s-skel" x="20" y="98" width="124" height="28" rx="6"/>
+        <text class="s-txt s-sm s-mute" x="82" y="116" text-anchor="middle">CATALOG</text>
+        <rect class="s-node" x="178" y="98" width="124" height="58" rx="6"/>
+        <text class="s-txt s-name" x="240" y="116" text-anchor="middle">CHECKOUT</text>
+        <text class="s-txt s-sm" x="240" y="132" text-anchor="middle">Take payment</text>
+        <text class="s-txt s-sm s-mute" x="240" y="147" text-anchor="middle">known</text>
+        <rect class="s-skel" x="336" y="98" width="124" height="28" rx="6"/>
+        <text class="s-txt s-sm s-mute" x="398" y="116" text-anchor="middle">ACCOUNTS</text>
+
+        <rect class="s-full" x="50" y="190" width="240" height="104" rx="6"/>
+        <text class="s-txt s-name" x="62" y="210">PAYMENT</text>
+        <text class="s-txt s-sm" x="62" y="227">intent: charge a card, once</text>
+        <text class="s-txt s-sm" x="62" y="243">state: undecided</text>
+        <text class="s-txt s-sm" x="62" y="259">constraints: no card data stored</text>
+        <text class="s-txt s-sm" x="62" y="275">design notes: provider not chosen</text>
+        <text class="s-txt s-sm s-mute" x="62" y="289">examples, history, code pointers ...</text>
+        <rect class="s-skel" x="352" y="190" width="96" height="28" rx="6"/>
+        <text class="s-txt s-sm s-mute" x="400" y="208" text-anchor="middle">TAX</text>
+
+        <rect class="s-skel" x="20" y="312" width="28" height="14" rx="3"/>
+        <text class="s-txt s-sm" x="58" y="324">skeleton: identifier and name</text>
+        <rect class="s-node" x="20" y="332" width="28" height="14" rx="3"/>
+        <text class="s-txt s-sm" x="58" y="344">lean: adds intent and epistemic state</text>
+        <rect class="s-full" x="20" y="352" width="28" height="14" rx="3"/>
+        <text class="s-txt s-sm" x="58" y="364">full: every field (the target)</text>
+      </svg>
+      <figcaption>The example graph seen through a lens whose target is PAYMENT. The shape of the logo comes from this idea: a vertical stem of ancestors down to the target, and a V of context spreading around it.</figcaption>
+    </figure>
+
+    <p class="measure">From the command line, a lens is one command:</p>
+<pre><code>ig-tool lens build -g graph.json -t PAYMENT -b 30 -o lens.yaml</code></pre>
+    <p class="measure">Specification: <a href="https://github.com/intent-graph/intent_graph/blob/main/foundation_and_formalism/LENS_REDESIGN_SPEC.md">lens specification</a>; guide: <a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_02_NAVIGATION.md">navigation primer</a>.</p>
+  </div>
+</section>
+
+<section id="epistemic">
+  <div class="wrap">
+    <h2>4. Epistemic state</h2>
+    <p class="measure">Every node says how much is known about it. This is the idea borrowed from social science: a finding without its context and acknowledged uncertainty is not worth much, yet code carries neither. The field is free text; these are the common starting words:</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Epistemic states table, scrolls sideways on narrow screens">
+      <table>
+        <caption>Common epistemic states and what to do about each</caption>
+        <thead><tr><th scope="col">State</th><th scope="col">Meaning</th><th scope="col">Typical next step</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">known</th><td>Well understood and stable.</td><td>Build on it.</td></tr>
+          <tr><th scope="row">undecided</th><td>Several options, no decision yet.</td><td>Present the options to a human, or research.</td></tr>
+          <tr><th scope="row">risky</th><td>Decided, with identified risks.</td><td>Flag it in reviews and add validation.</td></tr>
+          <tr><th scope="row">speculative</th><td>A best guess with low confidence.</td><td>Validate before building on it.</td></tr>
+          <tr><th scope="row">inherited</th><td>Assumed from the parent, not checked independently.</td><td>Check it if the node becomes critical.</td></tr>
+          <tr><th scope="row">observed</th><td>Extracted from existing code.</td><td>Confirm it still matches the code.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="measure">Issues can be appended, for example <code>undecided: three strategies proposed | unvalidated: no test coverage data</code>. A node may also be marked <em>deferred</em> when a decision is left open on purpose. The first rule for every agent is <strong>never invent intent</strong>: an honest &ldquo;undecided&rdquo; is better than false certainty. The graph may be temporarily messy, but it must never be silently wrong.</p>
+    <p class="measure">Guide: <a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_01_SEMANTICS.md">semantics primer</a>.</p>
+  </div>
+</section>
+
+<section class="alt" id="projections">
+  <div class="wrap">
+    <h2>5. Projections</h2>
+    <p class="measure">A <strong>projection</strong> is anything generated from the graph through a lens: code in a chosen language and design style, a spec, a README, an executive summary, behavioural scenarios, tests, or a visual rendering. Each audience gets the view it needs, all derived from the same truth.</p>
+    <p class="measure">How a projection is produced is itself intent, and it is kept apart from the product. A <strong>ProjectionIG</strong> is a full intent graph about one rendering: a code ProjectionIG holds paradigm, naming and error handling; a documentation one holds audience, tone and emphasis. Swap the ProjectionIG and the same product intent yields object-oriented or functional code, an executive summary or a technical spec. A simple test sorts content between the two: if a statement would break when you switch to another language, it belongs in the ProjectionIG.</p>
+
+    <figure>
+      <svg viewBox="0 0 480 296" role="img" aria-labelledby="p1-t p1-d">
+        <title id="p1-t">Two graphs, one lens, many projections</title>
+        <desc id="p1-d">At the top, two boxes side by side: the Product IntentGraph, which holds what the system does and why, and the ProjectionIG, which holds how one rendering is made and why. Arrows lead from both into a lens bar. From the lens, solid arrows lead down to four projections: code, docs and specs, tests, and visual views. Dashed arrows lead back up from each projection to the lens, showing that edits flow back into the graph.</desc>
+        <defs>
+          <marker id="p1-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="s-head" d="M0 0 L10 5 L0 10 z"/></marker>
+          <marker id="p1-bk" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="s-head-mute" d="M0 0 L10 5 L0 10 z"/></marker>
+        </defs>
+        <g text-anchor="middle">
+          <rect class="s-node" x="20" y="10" width="210" height="62" rx="6"/>
+          <text class="s-txt s-name" x="125" y="32">Product IntentGraph</text>
+          <text class="s-txt s-sm s-mute" x="125" y="50">what the system does</text>
+          <text class="s-txt s-sm s-mute" x="125" y="65">and why</text>
+          <rect class="s-node" x="250" y="10" width="210" height="62" rx="6"/>
+          <text class="s-txt s-name" x="355" y="32">ProjectionIG</text>
+          <text class="s-txt s-sm s-mute" x="355" y="50">how one rendering is made</text>
+          <text class="s-txt s-sm s-mute" x="355" y="65">and why</text>
+          <path class="s-arrow" marker-end="url(#p1-ah)" d="M125 72 V106"/>
+          <path class="s-arrow" marker-end="url(#p1-ah)" d="M355 72 V106"/>
+          <rect class="s-bar" x="20" y="108" width="440" height="30" rx="6"/>
+          <text class="s-txt s-sm" x="240" y="127">lens: a slice of both graphs, at chosen detail</text>
+          <path class="s-arrow" marker-end="url(#p1-ah)" d="M55 138 V172"/>
+          <path class="s-arrow" marker-end="url(#p1-ah)" d="M168 138 V172"/>
+          <path class="s-arrow" marker-end="url(#p1-ah)" d="M281 138 V172"/>
+          <path class="s-arrow" marker-end="url(#p1-ah)" d="M394 138 V172"/>
+          <path class="s-back" marker-end="url(#p1-bk)" d="M95 174 V142"/>
+          <path class="s-back" marker-end="url(#p1-bk)" d="M208 174 V142"/>
+          <path class="s-back" marker-end="url(#p1-bk)" d="M321 174 V142"/>
+          <path class="s-back" marker-end="url(#p1-bk)" d="M434 174 V142"/>
+          <rect class="s-node" x="20" y="176" width="100" height="50" rx="6"/>
+          <text class="s-txt s-name" x="70" y="197">Code</text><text class="s-txt s-sm s-mute" x="70" y="214">any language</text>
+          <rect class="s-node" x="133" y="176" width="100" height="50" rx="6"/>
+          <text class="s-txt s-name" x="183" y="197">Docs, specs</text><text class="s-txt s-sm s-mute" x="183" y="214">per audience</text>
+          <rect class="s-node" x="246" y="176" width="100" height="50" rx="6"/>
+          <text class="s-txt s-name" x="296" y="197">Tests</text><text class="s-txt s-sm s-mute" x="296" y="214">check the code</text>
+          <rect class="s-node" x="359" y="176" width="100" height="50" rx="6"/>
+          <text class="s-txt s-name" x="409" y="197">Visual views</text><text class="s-txt s-sm s-mute" x="409" y="214">GUI</text>
+        </g>
+        <path class="s-arrow" marker-end="url(#p1-ah)" d="M20 252 H56"/>
+        <text class="s-txt s-sm" x="66" y="256">generated from the graph</text>
+        <path class="s-back" marker-end="url(#p1-bk)" d="M20 276 H56"/>
+        <text class="s-txt s-sm" x="66" y="280">edits to a projection flow back into the graph</text>
+      </svg>
+      <figcaption>Product intent and rendering intent are separate graphs. A lens picks a slice of each; projections are generated from the slice and reconciled back when someone edits them.</figcaption>
+    </figure>
+
+    <p class="measure">Projections are not read-only. When a developer changes the code or a product manager rewrites a spec, the change can be reconciled back into the graph, so specs, docs and code stay maintained views of one source rather than parallel artefacts that drift. This is why IntentGraph aims to <em>subsume</em> spec-driven workflows instead of replacing them.</p>
+    <p class="measure">Guide: <a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_00_PHILOSOPHY.md">philosophy primer</a> (the five axioms and the dual-graph model).</p>
+  </div>
+</section>
+
+<section id="agents">
+  <div class="wrap">
+    <h2>6. Agents</h2>
+    <p class="measure">A graph with no tooling would be an inert design document. Agents bring it to life. They are configurations of foundation models, not trained models: each role is a set of instructions kept in the repository, under <code>.claude/agents/</code>. Each agent works through a lens it is given, never on the whole graph, and edits go through validated <code>ig-tool</code> commands rather than raw files.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Agent roles table, scrolls sideways on narrow screens">
+      <table>
+        <caption>Agent roles</caption>
+        <thead><tr><th scope="col">Role</th><th scope="col">Job</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Elicitor</th><td>Conducts a structured dialogue with a human to draw out intent.</td></tr>
+          <tr><th scope="row">Critic</th><td>Finds graph quality issues: vagueness, contradictions, gaps.</td></tr>
+          <tr><th scope="row">Extractor</th><td>Extracts intent from existing code, iteratively.</td></tr>
+          <tr><th scope="row">Designer</th><td>Designs the code architecture from the intent.</td></tr>
+          <tr><th scope="row">Generator</th><td>Generates code from the intent.</td></tr>
+          <tr><th scope="row">Verifier</th><td>Creates tests from the intent, to check that the code is faithful to it.</td></tr>
+          <tr><th scope="row">Steward</th><td>Enforces structure and propagates changes.</td></tr>
+          <tr><th scope="row">Navigator</th><td>Recommends what to work on next.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="measure">The agents are still work in progress; see <a href="index.html#status">where the project stands</a>. Entry point: <a href="https://github.com/intent-graph/intent_graph/blob/main/agents/README.md">agent primers</a>. How the roles combine into the three workflows: <a href="https://github.com/intent-graph/intent_graph/blob/main/agents/PRIMER_04_WORKFLOWS.md">workflows primer</a>.</p>
+    <p><a class="btn primary" href="start.html">Try it yourself</a></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>IntentGraph is <strong>source-available</strong> under the PolyForm Shield License 1.0.0: free to use, modify and distribute for any purpose, including at work, except to provide a product that competes with IntentGraph.</p>
+    <ul>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/LICENSE.md">LICENSE.md</a></li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a></li>
+      <li><a href="https://github.com/intent-graph/intent_graph">Source on GitHub</a></li>
+      <li><a href="https://github.com/intent-graph/ai_tooling">Companion repository: ai_tooling</a></li>
+    </ul>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IntentGraph: intent as the source of truth</title>
+<meta name="description" content="IntentGraph keeps what software is for, why it is built that way and what is still undecided in a structured, zoomable graph. Code, docs, specs and tests are generated from it.">
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/svg+xml" href="assets/logo-white.svg" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html">
+      <picture>
+        <source srcset="assets/logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img src="assets/logo.svg" alt="" width="34" height="31">
+      </picture>
+      <span>IntentGraph</span>
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="index.html" aria-current="page">Overview</a></li>
+        <li><a href="concepts.html">Concepts</a></li>
+        <li><a href="start.html">Get started</a></li>
+        <li><a href="https://github.com/intent-graph/intent_graph">GitHub</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<section class="hero">
+  <div class="wrap">
+    <picture>
+      <source srcset="assets/logo-white.svg" media="(prefers-color-scheme: dark)">
+      <img class="hero-logo" src="assets/logo.svg" alt="IntentGraph logo: two mirrored strokes forming a V around a vertical stem, resting on a short base bar" width="88" height="79">
+    </picture>
+    <p class="eyebrow">Source-available &middot; early stage</p>
+    <h1>Make intent, not code, the source of truth.</h1>
+    <p class="lead">Code records <em>how</em> a system works. It does not record what the system is for, why it was built this way, or what was left undecided. IntentGraph keeps that in a structured graph you can zoom, and treats code, docs, specs and tests as views generated from it.</p>
+    <div class="btn-row">
+      <a class="btn primary" href="start.html">Try it in 5 minutes</a>
+      <a class="btn secondary" href="concepts.html">Read the concepts</a>
+      <a class="btn secondary" href="https://github.com/intent-graph/intent_graph">View the repository</a>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="problem">
+  <div class="wrap">
+    <h2>The problem: code is the wrong place to keep intent</h2>
+    <p class="measure">Purpose, constraints, trade-offs and rejected alternatives end up in meetings, tickets, comments and the heads of the people who wrote the code. Four things follow.</p>
+    <div class="cards two">
+      <div class="card">
+        <h3>Intent is implicit</h3>
+        <p>The &ldquo;why&rdquo; is not in the code, so understanding, maintaining or extending a system means reverse-engineering it. When the authors leave, the reasons leave with them.</p>
+      </div>
+      <div class="card">
+        <h3>Code is flat</h3>
+        <p>There is no hierarchy of purpose and no zoom. To understand a part you read everything, or you read nothing.</p>
+      </div>
+      <div class="card">
+        <h3>Uncertainty is invisible</h3>
+        <p>Code either does X or it does not. Nothing says &ldquo;this is a workaround&rdquo; or &ldquo;we have not decided yet&rdquo;.</p>
+      </div>
+      <div class="card">
+        <h3>Relevance is hard to bound</h3>
+        <p>Changing one function can break behaviour elsewhere, and the dependencies are often invisible. In a large system nobody can hold the whole thing in mind.</p>
+      </div>
+    </div>
+    <p class="measure" style="margin-top:1.25rem">AI coding assistants make this worse, not better: more code, written faster, with no more of the <em>why</em> attached to it.</p>
+  </div>
+</section>
+
+<section id="answer">
+  <div class="wrap">
+    <h2>The answer: one graph, many views</h2>
+    <p class="measure">IntentGraph centres software development on a single <strong>intent graph</strong>: a tree of units of intent (&ldquo;what is this part for, and why?&rdquo;) with explicit relations between them. The graph is the canonical model. Everything else is a <strong>projection</strong> of it: code, documentation, specs, tests, visual views. Different audiences get different projections of the same truth, and edits to a projection flow back into the graph.</p>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">zoom</span>
+        <h3>Zoom without losing meaning</h3>
+        <p>Refining a node adds precision but never changes what it stands for. Parts of the system can stay coarse for as long as you like. A <em>lens</em> shows a slice of the graph at the detail you choose, so a person or an AI agent can work on one part with the rest in view at low resolution.</p>
+      </div>
+      <div class="card">
+        <span class="tag">epistemic state</span>
+        <h3>Say what you do not know</h3>
+        <p>Every node records how sure we are: known, undecided, risky, speculative, observed from existing code. The graph never pretends to be complete, so gaps and open decisions are visible instead of buried.</p>
+      </div>
+      <div class="card">
+        <span class="tag">projection</span>
+        <h3>Intent apart from implementation</h3>
+        <p>What the system does and why lives in the product graph. How one particular rendering is produced (language, style, audience, tone) lives in a separate graph. Swap the second and you get another language or another document from the same intent.</p>
+      </div>
+    </div>
+    <p style="margin-top:1rem"><a href="concepts.html">The concepts in detail, with diagrams &rarr;</a></p>
+  </div>
+</section>
+
+<section class="alt" id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="measure">Three workflows move between the graph and your code. Specialised AI agents do the heavy lifting; a command-line tool, <code>ig-tool</code>, gives them (and you) validated, atomic edits, so nobody edits raw graph files by hand.</p>
+    <div class="cards">
+      <div class="card">
+        <span class="tag">Improve</span>
+        <h3>Build and challenge intent</h3>
+        <p>Refine the graph through dialogue and critique. Surface gaps, contradictions and unresolved decisions. Works from scratch or on an existing graph.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Distill</span>
+        <h3>Extract intent from code</h3>
+        <p>Reverse-engineer a graph from an existing codebase and its docs, layer by layer, not as one dump. Extracted claims are marked <em>observed</em> and re-checked against the code.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Project</span>
+        <h3>Generate from intent</h3>
+        <p>Derive code, documentation or tests from a refined graph, in a chosen language and design style. If the intent turns out to be insufficient, pause and improve the graph first.</p>
+      </div>
+    </div>
+    <p class="measure" style="margin-top:1rem">A typical loop: define or update the graph through a lens, validate it, bundle the local neighbourhood for focused work, project it into artifacts, and when a projection is edited, reconcile the change back into the graph.</p>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="wrap">
+    <h2>How it differs from prior approaches</h2>
+    <p class="measure">The problem is recognised, and several families of tools attack part of it. This table is the project&rsquo;s own reading of them; the full argument is in the <a href="https://github.com/intent-graph/intent_graph/blob/main/foundation_and_formalism/POSITIONING_SUMMARY.md">positioning summary</a>.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Comparison table, scrolls sideways on narrow screens">
+      <table class="compare">
+        <caption>Four families of prior work, where each stops, and what IntentGraph does differently</caption>
+        <thead>
+          <tr><th scope="col">Family</th><th scope="col">What it does</th><th scope="col">Where it stops</th><th scope="col">IntentGraph</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">Spec-driven development<br><span class="muted">Tessl, Traycer, Kiro, GitHub Spec Kit</span></th>
+            <td>Structured text specs that guide AI code generation.</td>
+            <td>A spec describes behaviour, not the reasons behind it. It is flat text with implicit links and no way to express uncertainty.</td>
+            <td>Hierarchical, with typed relations and explicit epistemic state. A spec becomes one projection of the graph.</td>
+          </tr>
+          <tr>
+            <th scope="row">Formal methods and goal modelling<br><span class="muted">KAOS, i*, TLA+, Alloy</span></th>
+            <td>Mathematical rigour: goal decomposition, state machines, constraints.</td>
+            <td>Another language to learn, and a demand for completeness up front. Records the result of a decision, not its reasoning.</td>
+            <td>Incompleteness is first-class. Readable by mixed-skill teams at the level of detail they need.</td>
+          </tr>
+          <tr>
+            <th scope="row">Projectional editing<br><span class="muted">JetBrains MPS, Intentional Programming</span></th>
+            <td>Separate the model from its views.</td>
+            <td>Right architecture, wrong object: the model is still a syntax tree, a representation of code and not of intent.</td>
+            <td>Same principle (canonical model plus projections), applied to intent.</td>
+          </tr>
+          <tr>
+            <th scope="row">Intent-native runtimes<br><span class="muted">Unison, Embabel, Darklang</span></th>
+            <td>Build intent into execution or storage.</td>
+            <td>They address runtime, not design. They cannot describe a system that does not exist yet or parts left deliberately open.</td>
+            <td>Works at design time and is language-agnostic: one graph, code in any language.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="status">
+  <div class="wrap">
+    <h2>Where it stands</h2>
+    <div class="note">
+      <p><strong>Early stage, built in the open.</strong> The foundations exist and run. The headline claim, that a real codebase can be rebuilt from its graph alone, is the project&rsquo;s stated goal, not yet a published result.</p>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h3>Exists today</h3>
+        <ul class="tight">
+          <li>A written formalism: vocabulary, notation and invariants.</li>
+          <li>A Python core library: data model, lens operations, serialisation, two-way sync with Obsidian.</li>
+          <li>The <code>ig-tool</code> command line: validation, lens, node and link edits, batch changes.</li>
+          <li>A worked example graph (21 nodes) and a VS Code extension for viewing and editing.</li>
+          <li>Instruction files for the agent roles.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Not there yet</h3>
+        <ul class="tight">
+          <li>The agent workflows are work in progress.</li>
+          <li>The end-to-end validation (regenerate a popular third-party Python library from its graphs and have the result judged equivalent) is the roadmap&rsquo;s definition of done, not an achieved result.</li>
+        </ul>
+        <p class="muted">Details: <a href="https://github.com/intent-graph/intent_graph/blob/main/ROADMAP.md">roadmap</a> and <a href="https://github.com/intent-graph/intent_graph/blob/main/ARCHITECTURE.md">architecture</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="where-to-start">
+  <div class="wrap">
+    <h2>Where to start</h2>
+    <div class="cards">
+      <div class="card">
+        <h3><a href="start.html">Try it</a></h3>
+        <p>Clone the repository and explore a bundled example graph from the command line. About five minutes.</p>
+      </div>
+      <div class="card">
+        <h3><a href="concepts.html">Understand it</a></h3>
+        <p>Graph, lens, levels of detail, epistemic state, projections and agents, each in a few paragraphs with diagrams.</p>
+      </div>
+      <div class="card">
+        <h3><a href="https://github.com/intent-graph/intent_graph">Read the source</a></h3>
+        <p>The repository holds the specification, the code and the agent primers. Issues are welcome.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>IntentGraph is <strong>source-available</strong> under the PolyForm Shield License 1.0.0: free to use, modify and distribute for any purpose, including at work, except to provide a product that competes with IntentGraph.</p>
+    <ul>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/LICENSE.md">LICENSE.md</a></li>
+      <li><a href="https://github.com/intent-graph/intent_graph/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a></li>
+      <li><a href="https://github.com/intent-graph/intent_graph">Source on GitHub</a></li>
+      <li><a href="https://github.com/intent-graph/ai_tooling">Companion repository: ai_tooling</a></li>
+    </ul>
+  </div>
+</footer>
+</body>
+</html>
