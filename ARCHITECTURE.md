@@ -1,6 +1,6 @@
 # Architecture
 
-How the IntentCode code parts fit together, organized by roadmap phase.
+How the IntentGraph code parts fit together, organized by roadmap phase.
 
 ---
 
@@ -42,7 +42,7 @@ The orchestrator specifies mode modules through the prompt preamble (`{mode_modu
 ## foundation_and_formalism/
 <!-- Lines 44-54 -->
 
-**Phase 0 — Foundations & Formalism** (from [INTENTCODE_ROADMAP.md](INTENTCODE_ROADMAP.md))
+**Phase 0 — Foundations & Formalism** (from [ROADMAP.md](ROADMAP.md))
 
 Consolidation of scattered definitions, rules, schemas, and positioning into single-reference documents.
 
@@ -50,7 +50,7 @@ Consolidation of scattered definitions, rules, schemas, and positioning into sin
 |----------|---------------|-------------|
 | [VOCABULARY_AND_FORMALISM.md](foundation_and_formalism/VOCABULARY_AND_FORMALISM.md) | Vocabulary (7 terms), notation (`IG`, `inode`, `tarc`, `ilink`, `L`), node/link/graph/lens schemas, invariants (T1–T5), operations catalog, ilink lifting & projection, epistemic state, ID/PK scheme, provenance model | WP-0.2 (formal model & notation) |
 | [SERIALIZATION_FORMAT.md](foundation_and_formalism/SERIALIZATION_FORMAT.md) | Wire format spec: persistence (JSON/YAML full graph), agent text (view/lens I/O), graph overview (navigation). Omission rules, YAML style, ID conventions. | WP-1.3 (agent serialization) |
-| [POSITIONING_SUMMARY.md](foundation_and_formalism/POSITIONING_SUMMARY.md) | How IntentCode differs from spec-driven dev, formal methods, projectional editing, and intent-native runtimes. Comparison table, strategic position. | WP-0.1 (state of the art & positioning) |
+| [POSITIONING_SUMMARY.md](foundation_and_formalism/POSITIONING_SUMMARY.md) | How IntentGraph differs from spec-driven dev, formal methods, projectional editing, and intent-native runtimes. Comparison table, strategic position. | WP-0.1 (state of the art & positioning) |
 
 ### Sources consolidated
 <!-- Lines 57-63 -->

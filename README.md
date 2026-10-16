@@ -1,4 +1,4 @@
-# IntentCode
+# IntentGraph
 
 <p align="center">
   <picture>
@@ -7,7 +7,7 @@
   </picture>
 </p>
 
-Center software development on a single Intent Graph that remains coherent under mixed levels of detail, so intent, constraints, and unknowns can be refined locally without rewriting the whole system. **The intent graph is the canonical model; everything else — code, documentation, specs, visual views — is a projection.** Different audiences get different projections of the same truth, all generated from and linked back to the same graph. This repository serves as the source of truth for the IntentCode specification and tooling.
+Center software development on a single Intent Graph that remains coherent under mixed levels of detail, so intent, constraints, and unknowns can be refined locally without rewriting the whole system. **The intent graph is the canonical model; everything else — code, documentation, specs, visual views — is a projection.** Different audiences get different projections of the same truth, all generated from and linked back to the same graph. This repository serves as the source of truth for the IntentGraph specification and tooling.
 
 ## Table of Contents
 
@@ -65,7 +65,7 @@ See [Project Definition](project_definition.md) for full definitions.
 ├── pyproject.toml           # Root package (intentgraph-tools) — install: uv tool install -e .
 ├── project_definition.md    # Core definitions and goals
 ├── intentlink_spec.md       # Specification for intent links
-├── INTENTCODE_ROADMAP.md    # Project roadmap (phases 0–5, validation, training)
+├── ROADMAP.md    # Project roadmap (phases 0–5, validation, training)
 ├── projection/              # ProjectionIG reference artifacts
 │   └── projection_dimensions.ig.yaml  # Dimension ontology (PIG-DIM.*)
 ├── ARCHITECTURE.md          # How the code parts fit together
@@ -163,7 +163,7 @@ md-doc-tree-full . -o DOC_MANIFEST           # full sections + cross-refs YAML
 **Key Documents:**
 
 - **[Project Definition](project_definition.md)**: Goals, philosophy, and vocabulary.
-- **[Roadmap](INTENTCODE_ROADMAP.md)**: Project phases (0–5), validation criterion, agent implementation, training.
+- **[Roadmap](ROADMAP.md)**: Project phases (0–5), validation criterion, agent implementation, training.
 - **[Architecture](ARCHITECTURE.md)**: How the code parts fit together — Phase 0 (formalism) and Phase 1 (core library + Obsidian GUI) both complete.
 - **[Agents](agents/README.md)**: See [Agent Primers — Start Here](#agent-primers--start-here) above.
 - **[Projection](projection/README.md)**: ProjectionIG dimension ontology and language-specific defaults (valid IntentGraphs).

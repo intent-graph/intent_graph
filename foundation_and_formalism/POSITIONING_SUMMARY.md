@@ -1,8 +1,8 @@
-# IntentCode — Positioning Summary (Phase 0)
+# IntentGraph — Positioning Summary (Phase 0)
 
 **Status:** Working draft — synthesis of existing positioning material  
 **Sources:** [STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md](../STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md)  
-**Goal:** One-page answer to "how does IntentCode relate to and differ from every other approach?" — the positioning paper called for in WP-0.1.4.
+**Goal:** One-page answer to "how does IntentGraph relate to and differ from every other approach?" — the positioning paper called for in WP-0.1.4.
 
 ---
 
@@ -10,7 +10,7 @@
 
 **Code is the wrong source of truth.** It records *how* but not *why*, *what was rejected*, or *what remains uncertain*. Every downstream problem — documentation drift, stakeholder lock-out, flat hierarchy, invisible uncertainty, language lock-in — traces to this.
 
-**IntentCode replaces code with a structured, multi-level, navigable intent graph as the canonical model.** Everything else — code, docs, specs, visual views — is a projection.
+**IntentGraph replaces code with a structured, multi-level, navigable intent graph as the canonical model.** Everything else — code, docs, specs, visual views — is a projection.
 
 ---
 
@@ -26,7 +26,7 @@
 - Specs have **no representation for uncertainty** — an item is either written or not.
 - Specs are better prompts. They do not capture the reasoning that precedes and outlives any implementation.
 
-**IntentCode difference:** The IntentGraph is hierarchical (mixed-detail tree), relational (intentlinks with typed semantics), and epistemic (explicit known/undecided/risky/deferred states). Specs can be *generated as projections* of the graph for the right audience. Product intent and rendering-specific concerns (language, paradigm, naming conventions) live in separate graphs — the product IntentGraph and the ProjectionIG — so behavioral specs never carry implementation assumptions (P4).
+**IntentGraph difference:** The IntentGraph is hierarchical (mixed-detail tree), relational (intentlinks with typed semantics), and epistemic (explicit known/undecided/risky/deferred states). Specs can be *generated as projections* of the graph for the right audience. Product intent and rendering-specific concerns (language, paradigm, naming conventions) live in separate graphs — the product IntentGraph and the ProjectionIG — so behavioral specs never carry implementation assumptions (P4).
 
 ### 2. Formal Methods & Goal Modeling (KAOS, i*, TLA+, Alloy)
 
@@ -37,7 +37,7 @@
 - They are **alternative programming languages** — with their own syntax, semantics, type systems. The stakeholder problem is not solved, just relocated. The specification itself can drift from reality.
 - They **demand completeness** — you cannot have a half-specified model. This is fundamentally at odds with iterative, uncertainty-laden real-world development.
 
-**IntentCode difference:** Incompleteness is first-class (P3). Epistemic state is modeled, not forbidden. The graph does not require formal-logic fluency to read or contribute to — it is navigable by mixed-skill teams at chosen levels of detail.
+**IntentGraph difference:** Incompleteness is first-class (P3). Epistemic state is modeled, not forbidden. The graph does not require formal-logic fluency to read or contribute to — it is navigable by mixed-skill teams at chosen levels of detail.
 
 ### 3. Projectional Editing & Language Workbenches (JetBrains MPS, Intentional Programming)
 
@@ -48,7 +48,7 @@
 - The underlying model is still an AST — a representation of code, not of intent.
 - No definition of what intent *is*, how it decomposes hierarchically, how to represent uncertainty.
 
-**IntentCode difference:** The model is an intent graph, not an AST. The projections are intent-derived (code, docs, specs, visual views), not syntax-derived. The architecture is the same principle (canonical model + projections) applied at the right level of abstraction.
+**IntentGraph difference:** The model is an intent graph, not an AST. The projections are intent-derived (code, docs, specs, visual views), not syntax-derived. The architecture is the same principle (canonical model + projections) applied at the right level of abstraction.
 
 ### 4. Intent-Native Runtimes (Unison, Embabel/GOAP, Darklang)
 
@@ -59,15 +59,15 @@
 - Language-locked. Cannot represent a system that doesn't exist yet or parts that are deliberately underspecified.
 - Non-technical stakeholders still cannot interact with the source of truth.
 
-**IntentCode difference:** Operates at design time, not runtime. Language-agnostic (one graph → code in any language). Accessible to non-technical stakeholders via lens-level projections.
+**IntentGraph difference:** Operates at design time, not runtime. Language-agnostic (one graph → code in any language). Accessible to non-technical stakeholders via lens-level projections.
 
 ---
 
-## The Structural Gap IntentCode Fills
+## The Structural Gap IntentGraph Fills
 
 None of the four families make **intent** — the why, the reasoning, the trade-offs, the uncertainty — into a **first-class, structured, multi-level, navigable artifact** that *replaces* code as the source of truth rather than sitting alongside it.
 
-| Property | Spec-Driven | Formal Methods | Projectional | Runtimes | **IntentCode** |
+| Property | Spec-Driven | Formal Methods | Projectional | Runtimes | **IntentGraph** |
 |----------|-------------|----------------|--------------|----------|----------------|
 | Hierarchical (mixed-detail) | No (flat text) | Partial (goal trees) | No (AST) | No | **Yes** (treearc refinement) |
 | Explicit relationships | No (implicit) | Yes (formal) | No | No | **Yes** (intentlinks, typed) |
@@ -82,11 +82,11 @@ None of the four families make **intent** — the why, the reasoning, the trade-
 
 ## Strategic Position
 
-IntentCode is not competing with Cursor/Copilot on the speed of writing the first line of code. Text will always win there.
+IntentGraph is not competing with Cursor/Copilot on the speed of writing the first line of code. Text will always win there.
 
 But that first line is the easy part. Vibe-coded systems **cannot grow** — adding a feature means re-prompting the whole thing and hoping it doesn't break. They **cannot be reused** — there is no structured knowledge to extract and carry to another project. And they **can barely be used** — the moment you need to debug, extend, or hand off, you're reverse-engineering an artifact that not even its "author" understands.
 
-This is not about convenience or maintainability as a nice-to-have. Without captured intent, AI-generated code is **disposable by construction**. It works once, for one context, and then it's trash. IntentCode is the condition for producing software that is reliable, evolvable, and reusable at all — the difference between a throwaway demo and something you can actually build on.
+This is not about convenience or maintainability as a nice-to-have. Without captured intent, AI-generated code is **disposable by construction**. It works once, for one context, and then it's trash. IntentGraph is the condition for producing software that is reliable, evolvable, and reusable at all — the difference between a throwaway demo and something you can actually build on.
 
 ---
 

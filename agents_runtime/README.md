@@ -166,4 +166,4 @@ The agent configurations live in `.claude/agents/`:
 
 - [Core library](../src/README.md) — IntentGraph data model and operations
 - [Agent catalog](../agents/README.md) — Full agent descriptions
-- [Roadmap](../INTENTCODE_ROADMAP.md) — Phase 2 in context
+- [Roadmap](../ROADMAP.md) — Phase 2 in context

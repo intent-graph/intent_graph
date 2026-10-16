@@ -1,4 +1,4 @@
-# IntentCode — Vocabulary & Formalism (Phase 0)
+# IntentGraph — Vocabulary & Formalism (Phase 0)
 
 **Status:** Working draft — consolidation of existing material into a single reference  
 **Sources:** `docs/rules.md`, `intentlink_spec.md`, `project_definition.md`, `schema/*.v0.yaml`  
@@ -99,7 +99,7 @@ What a system does (product intent) and how that intent is materialized into art
 ## 2. Vocabulary
 <!-- Lines 101-103 -->
 
-Every term used in IntentCode, defined exactly once. Terms are ordered by dependency (each term uses only previously defined terms).
+Every term used in IntentGraph, defined exactly once. Terms are ordered by dependency (each term uses only previously defined terms).
 
 ### 2.1 — intentnode
 <!-- Lines 106-112 -->
@@ -823,12 +823,12 @@ Where each section's content originates:
 | §1 Principles | `project_definition.md` |
 | §2 Vocabulary | `docs/rules.md` (§Terms), `project_definition.md`, `README.md` (§Core Concepts). §2.7 revised: "style graph" → ProjectionIG (full IntentGraph for projection-specific intent). |
 | §3 Notation | New — formalizing implicit usage from `rules.md` and `intentlink_spec.md` |
-| §4 Node schema | `schema/intentnode.v0.yaml` + `INTENTCODE_ROADMAP.md` (WP-0.2.1) |
+| §4 Node schema | `schema/intentnode.v0.yaml` + `ROADMAP.md` (WP-0.2.1) |
 | §5 Intentlink schema | `schema/intentlink.v0.yaml` + `intentlink_spec.md` |
 | §6 IntentGraph schema | `schema/intentgraph.v0.yaml` |
 | §7 Lens schema | `LENS_REDESIGN_SPEC.md` |
-| §8 Invariants | `docs/rules.md` (§Invariants) + `INTENTCODE_ROADMAP.md` (WP-0.2.2) |
-| §9 Operations | `docs/rules.md` (§Operations) + `INTENTCODE_ROADMAP.md` (WP-0.2.3) |
+| §8 Invariants | `docs/rules.md` (§Invariants) + `ROADMAP.md` (WP-0.2.2) |
+| §9 Operations | `docs/rules.md` (§Operations) + `ROADMAP.md` (WP-0.2.3) |
 | §10 Lifting | `docs/rules.md` (§intentlink visibility) + `intentlink_spec.md` (§3–4) |
-| §11 Epistemic state | `INTENTCODE_ROADMAP.md` (WP-0.2.1) |
-| §12 Open questions | `INTENTCODE_ROADMAP.md` (§Open questions) + new questions from formalization |
+| §11 Epistemic state | `ROADMAP.md` (WP-0.2.1) |
+| §12 Open questions | `ROADMAP.md` (§Open questions) + new questions from formalization |

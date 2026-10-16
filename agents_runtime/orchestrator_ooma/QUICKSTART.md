@@ -49,7 +49,7 @@ From the workflow root directory (e.g., `my_project/t1_distill/`):
 
 ```bash
 # Ensure you're at project root (CRITICAL — see orchestrator_ooma_protocol.md §CWD Invariant)
-cd <your-checkout>/intent_code   # umbrella root; intent_graph/... paths below are relative to it
+cd <parent-of-intent_graph>   # the folder that contains intent_graph/; paths below are relative to it
 
 # Initialize workflow state
 {

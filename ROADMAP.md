@@ -1,7 +1,7 @@
-# IntentCode — Project Roadmap
+# IntentGraph — Project Roadmap
 
 **Version:** 0.1 — Living document  
-**Goal:** Build the IntentCode toolchain end-to-end, validated by a blind roundtrip test on a real open-source Python library.
+**Goal:** Build the IntentGraph toolchain end-to-end, validated by a blind roundtrip test on a real open-source Python library.
 
 > **Terminology note (2026-07-15):** This roadmap predates the removal of the **display frontier** concept. A frontier was a lens with binary LOD; the current model uses the **lens** (variable-LOD view) for all agent I/O and visualization. Read historical "frontier" mentions below as "lens". Current field/CLI contracts live in `foundation_and_formalism/VOCABULARY_AND_FORMALISM.md` and the `ig-tool-*` skills.
 
@@ -10,7 +10,7 @@
 ## Validation criterion (definition of done)
 <!-- Lines 12-18 -->
 
-Take a popular open-source Python library. Use IntentCode to iteratively build its intent graph and a ProjectionIG for the target projection. Use IntentCode (with no knowledge of the original source) to regenerate the code from the graphs alone. An external AI judge evaluates whether the generated code is functionally equivalent.
+Take a popular open-source Python library. Use IntentGraph to iteratively build its intent graph and a ProjectionIG for the target projection. Use IntentGraph (with no knowledge of the original source) to regenerate the code from the graphs alone. An external AI judge evaluates whether the generated code is functionally equivalent.
 
 **Critical testing principle:** Only **end-to-end / integration tests** are valid for evaluation. The intent graph captures *what* the software does, not *how* it is structured internally. Generated code may have completely different internal decomposition from the original — different functions, different classes, different module boundaries. Tests that reach into internal implementation (unit tests on private helpers, tests that import internal modules, tests that assert specific class hierarchies) are meaningless in this context. Only tests that exercise the **public API and observable behavior** — the contract the library exposes to its users — constitute a valid oracle.
 
@@ -505,7 +505,7 @@ End-to-end test of the three workflows (Distill → Declare → Project) on a Py
 ## Phase 5 — Custom Agent Training (future)
 <!-- Lines 507-514 -->
 
-**Objective:** Move from agents-as-configuration (prompted foundation models) to fine-tuned, purpose-built models. This phase begins only after the IntentCode workflow is validated end-to-end (Phase 4) and enough data has been collected through real usage.
+**Objective:** Move from agents-as-configuration (prompted foundation models) to fine-tuned, purpose-built models. This phase begins only after the IntentGraph workflow is validated end-to-end (Phase 4) and enough data has been collected through real usage.
 
 **Prerequisites:**
 - Phase 4 complete (validated workflow, known failure modes, understood agent roles)
