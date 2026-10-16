@@ -764,7 +764,7 @@ The `reintegrate` command identifies changes by comparing the derived IG against
 <!-- Lines 765-768 -->
 
 When `meta.intent_resources` is set on an IG, lens node and link UIDs may use qualified form:
-`graph_id:node_uid` (same format as inter intentlinks per [intentlink_spec.md §3.4](../intentlink_spec.md)).
+`graph_id:node_uid` (same format as inter intentlinks per [intentlink_spec.md §3.4](../docs/intentlink_spec.md)).
 
 ### Resolution rules
 <!-- Lines 771-778 -->

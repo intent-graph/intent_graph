@@ -122,10 +122,10 @@ def social_preview(font: TTFont) -> str:
     return svg_doc(W, H, inner, "IntentGraph: code, docs and specs are projections of one intent graph", bg=bg)
 
 
-def favicon(color: str, bg: str, r: float = 26) -> str:
-    """Square badge, mark centred; the mark is scaled, never redrawn. r = corner radius."""
+def favicon(color: str, bg: str, r: float = 26, mark_w: float = 100.0) -> str:
+    """Square badge, mark centred; the mark is scaled, never redrawn. r = corner radius;
+    mark_w = mark width on a 128-unit square."""
     S = 128.0
-    mark_w = 100.0
     mark_h = mark_w * MARK_H / MARK_W
     x, y = (S - mark_w) / 2, (S - mark_h) / 2
     body = (
@@ -168,6 +168,10 @@ def main() -> None:
     (out / "favicon-touch.svg").write_text(favicon("#ffffff", "#0d1117", r=0), encoding="utf-8")
     render(out / "favicon-touch.svg", out / "favicon-180.png", 180)
     (out / "favicon-touch.svg").unlink()
+    # GitHub organisation avatar: full-bleed square, wider margin (GitHub rounds the corners)
+    (out / "avatar.svg").write_text(favicon("#ffffff", "#0d1117", r=0, mark_w=84.0), encoding="utf-8")
+    render(out / "avatar.svg", out / "avatar.png", 500)
+    (out / "avatar.svg").unlink()
 
 
 if __name__ == "__main__":

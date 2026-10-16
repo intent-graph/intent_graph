@@ -45,7 +45,7 @@ Two serialization modes use the same lens nodes:
   All other nodes are lean: `uid` + `name` (title) + `intent` + `epistemic_state`.
 
 ## Files
-<!-- Lines 49-66 -->
+<!-- Lines 49-67 -->
 
 The mark is `logo.svg` and nothing else: every derived asset embeds its path data unchanged and
 only scales it.
@@ -62,10 +62,11 @@ only scales it.
 | `favicon.svg` | Vector, 128x128 | Mark on a rounded `#0d1117` badge: legible on light and dark browser chrome. |
 | `favicon-32.png` | Raster, 32x32 | Same badge, for tabs and bookmarks. |
 | `favicon-180.png` | Raster, 180x180 | Same badge, full-bleed square (the OS rounds it): `apple-touch-icon`. |
-| `build_assets.py` | Python | Regenerates the wordmark, social preview and favicon files from `logo.svg`'s path data (needs `fonttools`, `rsvg-convert` and Inter Medium). |
+| `avatar.png` | Raster, 500x500 | Mark on a full-bleed `#0d1117` square with a wider margin: the GitHub organisation avatar (uploaded by hand, Organization settings → Profile). |
+| `build_assets.py` | Python | Regenerates the wordmark, social preview, favicon and avatar files from `logo.svg`'s path data (needs `fonttools`, `rsvg-convert` and Inter Medium). |
 
 ## Using the Assets
-<!-- Lines 69-92 -->
+<!-- Lines 70-93 -->
 
 Light/dark switching in a README (GitHub serves the matching variant):
 

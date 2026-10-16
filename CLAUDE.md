@@ -31,6 +31,7 @@ Whenever "IG" or "IntentGraph" is mentioned, or work touches this directory, rea
 - Keep changes reviewable: update intentnodes/intentlinks/treearcs explicitly.
 - Avoid sweeping renames unless required by the user.
 - Maintain UID stability unless specifically instructed to renumber.
+- **`README.md` has no table of contents, on purpose**: it is the GitHub landing page and GitHub shows its own outline. Do not add one; other docs keep their line-number TOC.
 - **Links to the sibling `ai_tooling` repo** are relative (`../ai_tooling/...`): they work on a side-by-side checkout, not on GitHub. Only a few chosen high-level links (an entry README pointing at the other repo's entry doc) also carry the GitHub URL after the local link: `[X](../ai_tooling/X.md) ([GitHub](https://github.com/intent-graph/ai_tooling/blob/main/X.md))`. Deep documents keep the local link only.
 - **Provenance is automatic**: every save stamps changed nodes (write-boundary). Pass `--role <role>` and `-m "<one-liner why>"` on mutating commands; never hand-edit `history`.
 
@@ -68,5 +69,5 @@ Design guidelines: `agents_runtime/workflow_design_guidelines.md`
 - Agent primer: `agents_runtime/AGENT_PRIMER.md`
 - Agent instructions: `.claude/agents/ig-*-agent.md` (catalog: `.claude/agents/README.md`)
 - Orchestrator protocol: `agents_runtime/orchestrator/orchestrator_protocol.md`
-- IntentLink spec: `intentlink_spec.md`
-- Project definition & vocabulary: `project_definition.md`
+- IntentLink spec: `docs/intentlink_spec.md`
+- Project definition & vocabulary: `docs/project_definition.md`

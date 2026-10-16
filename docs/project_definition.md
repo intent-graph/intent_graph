@@ -24,8 +24,8 @@ The project is named after its model, the **IntentGraph**, and comprises: the mo
 
 **Core agents:** Elicitor (structured intent elicitation), Critic (graph quality review), Generator (graph→code), Extractor (code→graph, iterative), Verifier (intent→tests verification layer). **Supporting agents:** Navigator (lens recommendation), Propagator (change management across projections), Doc agents (bidirectional doc↔graph sync).
 
-- **Roadmap:** [ROADMAP.md](ROADMAP.md) (phases 0–5, validation, training)
-- **Agent catalog:** [agents/README.md](agents/README.md)
+- **Roadmap:** [ROADMAP.md](../ROADMAP.md) (phases 0–5, validation, training)
+- **Agent catalog:** [agents/README.md](../agents/README.md)
 
 # Project vocabulary and definition
 ## direct intent
@@ -39,7 +39,7 @@ The project is named after its model, the **IntentGraph**, and comprises: the mo
 ## ProjectionIG
 <!-- Lines 41-45 -->
 
-**Definition:** A full IntentGraph — same formalism (intentnodes, treearcs, intentlinks, lenses, epistemic state) — capturing the intent behind *how a specific projection instance should be rendered and why*. This is broader than coding conventions: a code ProjectionIG encodes paradigm choice, naming, error handling; a documentation ProjectionIG encodes audience, tone, emphasis; a test ProjectionIG encodes coverage strategy and assertion style. One ProjectionIG per projection instance, not per type. ProjectionIG nodes use the `PIG-<TAG>.` UID prefix (e.g., `PIG-PY-LIB.0.3`) to avoid collision with product IntentGraph nodes. The main (product) intent graph can call out tradeoffs explicitly on intentnodes (e.g. "this part is intended to be fast, at the cost of X"); these override ProjectionIG defaults. See [VOCABULARY_AND_FORMALISM.md](foundation_and_formalism/VOCABULARY_AND_FORMALISM.md) §2.7, §4.1.
+**Definition:** A full IntentGraph — same formalism (intentnodes, treearcs, intentlinks, lenses, epistemic state) — capturing the intent behind *how a specific projection instance should be rendered and why*. This is broader than coding conventions: a code ProjectionIG encodes paradigm choice, naming, error handling; a documentation ProjectionIG encodes audience, tone, emphasis; a test ProjectionIG encodes coverage strategy and assertion style. One ProjectionIG per projection instance, not per type. ProjectionIG nodes use the `PIG-<TAG>.` UID prefix (e.g., `PIG-PY-LIB.0.3`) to avoid collision with product IntentGraph nodes. The main (product) intent graph can call out tradeoffs explicitly on intentnodes (e.g. "this part is intended to be fast, at the cost of X"); these override ProjectionIG defaults. See [VOCABULARY_AND_FORMALISM.md](../foundation_and_formalism/VOCABULARY_AND_FORMALISM.md) §2.7, §4.1.
 
 ---
 

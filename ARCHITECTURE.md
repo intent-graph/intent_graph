@@ -57,7 +57,7 @@ Consolidation of scattered definitions, rules, schemas, and positioning into sin
 
 These documents pull from and supersede the scattered definitions in:
 
-- `intentlink_spec.md` — link payload, refinement, projection
-- `project_definition.md` — goal and vocabulary
+- `docs/intentlink_spec.md` — link payload, refinement, projection
+- `docs/project_definition.md` — goal and vocabulary
 - `schema/*.v0.yaml` — node, link, graph field schemas
-- `STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md` — competitive landscape
+- `docs/STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md` — competitive landscape

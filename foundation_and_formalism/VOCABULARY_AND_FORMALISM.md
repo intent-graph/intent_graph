@@ -1,7 +1,7 @@
 # IntentGraph — Vocabulary & Formalism (Phase 0)
 
 **Status:** Working draft — consolidation of existing material into a single reference  
-**Sources:** `docs/rules.md`, `intentlink_spec.md`, `project_definition.md`, `schema/*.v0.yaml`  
+**Sources:** `docs/rules.md`, `docs/intentlink_spec.md`, `docs/project_definition.md`, `schema/*.v0.yaml`  
 **Goal:** One document where every term has exactly one definition, every invariant has a precise statement, and every operation has pre/postconditions. This is the foundation everything else compiles against.
 
 ---
@@ -430,7 +430,7 @@ Rules:
 ## 5. Intentlink Schema
 <!-- Lines 432-443 -->
 
-The field-level structure of an intentlink. Consolidates `schema/intentlink.v0.yaml` and `intentlink_spec.md`.
+The field-level structure of an intentlink. Consolidates `schema/intentlink.v0.yaml` and `docs/intentlink_spec.md`.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -477,7 +477,7 @@ An intentlink may be refined into child intentlinks (link tree):
 ### Inter intentlinks
 <!-- Lines 479-495 -->
 
-An **inter intentlink** connects an intentnode in one IntentGraph to an intentnode in another (e.g. ProjectionIG → product). Full specification: `intentlink_spec.md` §Inter.
+An **inter intentlink** connects an intentnode in one IntentGraph to an intentnode in another (e.g. ProjectionIG → product). Full specification: `docs/intentlink_spec.md` §Inter.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -709,7 +709,7 @@ For each operation: preconditions, effect, postconditions (invariant preservatio
 ## 10. Ilink Lifting & Projection
 <!-- Lines 711-713 -->
 
-How ilinks behave when viewed through a lens. Consolidates `intentlink_spec.md` §3–4 and `rules.md` §ilink visibility.
+How ilinks behave when viewed through a lens. Consolidates `docs/intentlink_spec.md` §3–4 and `rules.md` §ilink visibility.
 
 ### 10.1 — Visibility rule
 <!-- Lines 716-720 -->
@@ -820,15 +820,15 @@ Where each section's content originates:
 
 | Section | Primary source(s) |
 |---------|--------------------|
-| §1 Principles | `project_definition.md` |
-| §2 Vocabulary | `docs/rules.md` (§Terms), `project_definition.md`, `README.md` (§Core Concepts). §2.7 revised: "style graph" → ProjectionIG (full IntentGraph for projection-specific intent). |
-| §3 Notation | New — formalizing implicit usage from `rules.md` and `intentlink_spec.md` |
+| §1 Principles | `docs/project_definition.md` |
+| §2 Vocabulary | `docs/rules.md` (§Terms), `docs/project_definition.md`, `README.md` (§Core Concepts). §2.7 revised: "style graph" → ProjectionIG (full IntentGraph for projection-specific intent). |
+| §3 Notation | New — formalizing implicit usage from `rules.md` and `docs/intentlink_spec.md` |
 | §4 Node schema | `schema/intentnode.v0.yaml` + `ROADMAP.md` (WP-0.2.1) |
-| §5 Intentlink schema | `schema/intentlink.v0.yaml` + `intentlink_spec.md` |
+| §5 Intentlink schema | `schema/intentlink.v0.yaml` + `docs/intentlink_spec.md` |
 | §6 IntentGraph schema | `schema/intentgraph.v0.yaml` |
 | §7 Lens schema | `LENS_REDESIGN_SPEC.md` |
 | §8 Invariants | `docs/rules.md` (§Invariants) + `ROADMAP.md` (WP-0.2.2) |
 | §9 Operations | `docs/rules.md` (§Operations) + `ROADMAP.md` (WP-0.2.3) |
-| §10 Lifting | `docs/rules.md` (§intentlink visibility) + `intentlink_spec.md` (§3–4) |
+| §10 Lifting | `docs/rules.md` (§intentlink visibility) + `docs/intentlink_spec.md` (§3–4) |
 | §11 Epistemic state | `ROADMAP.md` (WP-0.2.1) |
 | §12 Open questions | `ROADMAP.md` (§Open questions) + new questions from formalization |

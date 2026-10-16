@@ -279,7 +279,7 @@ So: one graph in isolation vs. one graph plus its referenced graphs. No duplicat
 <!-- Lines 280-286 -->
 
 - **project_definition.md** — Defines IntentGraph, ProjectionIG, projection. This spec adds a **project-level index** (the manifest), **product** (one or more, future hierarchy), **projection by target** (keyword, several graphs per target), and **inter-graph links in graphs**.
-- **intentlink_spec** — Same-graph intentlinks unchanged. Cross-graph links are an extension stored **in** a graph; see [intentlink_spec.md §3.4](../intentlink_spec.md).
+- **intentlink_spec** — Same-graph intentlinks unchanged. Cross-graph links are an extension stored **in** a graph; see [intentlink_spec.md §3.4](intentlink_spec.md).
 - **projection/README.md** — Reference artifacts (dimension ontology, python_defaults) remain. Projection graphs in the manifest may reference or derive from them.
 
 ---

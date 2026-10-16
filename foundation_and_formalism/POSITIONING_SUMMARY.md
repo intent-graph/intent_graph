@@ -1,7 +1,7 @@
 # IntentGraph — Positioning Summary (Phase 0)
 
 **Status:** Working draft — synthesis of existing positioning material  
-**Sources:** [STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md](../STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md)  
+**Sources:** [STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md](../docs/STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md)  
 **Goal:** One-page answer to "how does IntentGraph relate to and differ from every other approach?" — the positioning paper called for in WP-0.1.4.
 
 ---
@@ -95,7 +95,7 @@ This is not about convenience or maintainability as a nice-to-have. Without capt
 | Claim | Source |
 |-------|--------|
 | "Code is a terrible source of truth" argument | — |
-| Four-family taxonomy and gap analysis | [STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md](../STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md) §2–4 |
+| Four-family taxonomy and gap analysis | [STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md](../docs/STATE_OF_THE_ART__INTENT_FIRST_AND_SPEC_DRIVEN.md) §2–4 |
 | Comparison table properties | — |
 | Strategic position (not competing on first line) | — |
 | "Governance layer" framing | — |
