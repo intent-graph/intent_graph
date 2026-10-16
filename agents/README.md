@@ -68,4 +68,4 @@ Each agent file builds on these primers with role-specific tactics. All IG agent
 
 - **[PRIMER_TOOLS.md](PRIMER_TOOLS.md)** — ig-tool command guide (WHY/when); `.claude/skills/ig-tool-*/SKILL.md` for exact flags
 - **[../agents_runtime/AGENT_PRIMER.md](../agents_runtime/AGENT_PRIMER.md)** — Legacy agent primer (being superseded by PRIMER_* files)
-- **[../../ai_tooling/howto/programming_subagents.md](../../ai_tooling/howto/programming_subagents.md)** — Canonical agent task payload format (INPUT, INSTRUCTIONS, OUTPUT CONTRACT, execution context including effort_hint)
+- **[../../ai_tooling/howto/programming_subagents.md](../../ai_tooling/howto/programming_subagents.md)** ([GitHub](https://github.com/intent-graph/ai_tooling/blob/main/howto/programming_subagents.md)) — Canonical agent task payload format (INPUT, INSTRUCTIONS, OUTPUT CONTRACT, execution context including effort_hint)

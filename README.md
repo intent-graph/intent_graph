@@ -254,7 +254,7 @@ md-doc-tree-full . -o DOC_MANIFEST           # full sections + cross-refs YAML
 ## Companion Repository
 <!-- Lines 256-264 -->
 
-[`ai_tooling`](https://github.com/intent-graph/ai_tooling) holds the generic tools and knowledge bases this project builds on: `codemap` (structural code graph for Python), `md-structure-sync` and `md-doc-tree-*` (documentation tooling), the level-of-detail practice, and guideline knowledge bases held as IntentGraphs. It is not needed for the Quick Start above. Some documents here link to it with relative paths such as `../ai_tooling/...`; those links resolve when the two repositories are cloned side by side:
+[`ai_tooling`](../ai_tooling/README.md) ([GitHub](https://github.com/intent-graph/ai_tooling)) holds the generic tools and knowledge bases this project builds on: `codemap` (structural code graph for Python), `md-structure-sync` and `md-doc-tree-*` (documentation tooling), the level-of-detail practice, and guideline knowledge bases held as IntentGraphs. It is not needed for the Quick Start above. Some documents here link to it with relative paths such as `../ai_tooling/...`; those links resolve when the two repositories are cloned side by side:
 
 ```text
 some_folder/
