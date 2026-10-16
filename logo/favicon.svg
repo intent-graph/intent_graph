@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="IntentGraph">
+  <title>IntentGraph</title>
+  
+  <rect width="128" height="128" rx="26" fill="#0d1117"/><g transform="translate(4.816,10.777) scale(0.74427)"><g transform="translate(-20.2425,-8.8712502)">
+      <g style="stroke-width:6.5;stroke-dasharray:none">
+        <path style="fill:none;stroke:#ffffff;stroke-width:6.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1" d="M 35.834411,36.756286 56.548133,36.538794 99.611711,133.3231 99.569147,27.404095"/>
+        <path style="fill:none;stroke:#ffffff;stroke-width:6.5;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1" d="M 99.694776,133.3567 H 78.768218"/>
+      </g>
+      <g transform="matrix(-1,0,0,1,199.52919,0)" style="stroke-width:6.5;stroke-dasharray:none">
+        <path style="fill:none;stroke:#ffffff;stroke-width:6.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;stroke-opacity:1" d="M 35.834411,36.549536 56.548133,36.538794 99.611711,133.3231 99.569147,27.404095"/>
+        <path style="fill:none;stroke:#ffffff;stroke-width:6.5;stroke-linecap:round;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1" d="M 99.694776,133.3567 H 78.768218"/>
+      </g>
+    </g></g>
+</svg>
