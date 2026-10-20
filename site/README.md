@@ -4,12 +4,12 @@ The static site for IntentGraph: what it is, why it exists, and how to try it. P
 
 ## Table of Contents
 
-1. [What it is](#what-it-is) _(Lines 13-23)_
-1. [Preview locally](#preview-locally) _(Lines 26-34)_
-1. [How it deploys](#how-it-deploys) _(Lines 37-41)_
-1. [Keeping it true](#keeping-it-true) _(Lines 44-51)_
+1. [What it is](#what-it-is) _(Lines 13-24)_
+1. [Preview locally](#preview-locally) _(Lines 27-35)_
+1. [How it deploys](#how-it-deploys) _(Lines 38-42)_
+1. [Keeping it true](#keeping-it-true) _(Lines 45-52)_
 ## What it is
-<!-- Lines 13-23 -->
+<!-- Lines 13-24 -->
 
 Three pages and a stylesheet:
 
@@ -18,11 +18,12 @@ Three pages and a stylesheet:
 - `start.html` — a five-minute hands-on path, the reading order for the primers, the companion repository `ai_tooling`, feedback and contribution rules.
 - `assets/style.css` — the single stylesheet; light and dark themes follow `prefers-color-scheme`.
 - `assets/logo.svg`, `assets/logo-white.svg` — copies of `../logo/logo.svg` and `../logo/logo-white.svg`; the dark theme uses the white one. The favicon is the same SVG.
+- `assets/obsidian_canvas_js_defaults.png` — screenshot on `index.html` of an Obsidian canvas of the JavaScript defaults graph (`ai_tooling/dev_guidelines/javascript_guidelines/intent_graphs/js_defaults.ig.yaml`), cropped to the content and reduced to a 256-colour palette. Its caption quotes the node counts (287 in the graph, 30 in the view): retake the screenshot or fix the caption if the graph changes much.
 
 All links between pages are relative, so the site works opened from disk and under the project path (`/intent_graph/`) on GitHub Pages. Links into the repository are absolute `https://github.com/intent-graph/intent_graph/blob/main/<path>` URLs, because the site and the repository are served from different places.
 
 ## Preview locally
-<!-- Lines 26-34 -->
+<!-- Lines 27-35 -->
 
 Open `site/index.html` in a browser; nothing else is needed. To see it as Pages will serve it:
 
@@ -33,14 +34,14 @@ python3 -m http.server 8000 --directory site
 then visit `http://localhost:8000/`. Test both colour schemes (browser dev tools, or your operating system setting) and a narrow window (360 px wide).
 
 ## How it deploys
-<!-- Lines 37-41 -->
+<!-- Lines 38-42 -->
 
 `.github/workflows/pages.yml` deploys `site/` with the official GitHub actions (`configure-pages`, `upload-pages-artifact`, `deploy-pages`). It runs on every push to `main` that touches `site/**`, and on demand (`workflow_dispatch`).
 
 It does nothing useful until the repository owner enables Pages once: **Settings, Pages, Source: GitHub Actions**. Before that, a run stops at the `configure-pages` step with a message that Pages is not enabled. After that, the site appears at `https://intent-graph.github.io/intent_graph/`.
 
 ## Keeping it true
-<!-- Lines 44-51 -->
+<!-- Lines 45-52 -->
 
 The site makes claims about the project. When these change, update the pages in the same commit:
 

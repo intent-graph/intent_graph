@@ -139,6 +139,10 @@ table.compare { min-width: 40rem; }
 figure { max-width: 40rem; }
 figure svg { width: 100%; height: auto; display: block; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
 figcaption { color: var(--muted); font-size: 0.95rem; margin-top: 0.5rem; }
+/* screenshots: full column width, dark canvas framed the same way as the SVG figures */
+figure.shot { max-width: none; margin: 1.25rem 0 1.5rem; }
+figure.shot img { width: 100%; height: auto; display: block; border: 1px solid var(--border); border-radius: 10px; }
+figure.shot figcaption { max-width: var(--measure); }
 
 /* SVG parts, themed through the page tokens */
 .s-txt { fill: var(--fg); font-family: var(--font); font-size: 13px; }
